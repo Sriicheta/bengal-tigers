@@ -22,8 +22,8 @@ a local and outage fallback.
 
 The live feed does not modify Git or rebuild the site:
 
-1. Vercel Cron calls the protected `/api/instagram_cron` function every 30
-   minutes.
+1. Vercel Cron calls the protected `/api/instagram_cron` function once per day
+   at 00:00 UTC.
 2. The function uses `gallery-dl`, sorts by publication date so old pinned posts
    do not displace new posts, and writes the newest six posts to one private
    Vercel Blob JSON object.
@@ -33,9 +33,8 @@ The live feed does not modify Git or rebuild the site:
    development, or if the API is unavailable, it falls back to the checked-in
    `/data/instagram-posts.json` snapshot and local thumbnails.
 
-`vercel.json` registers the function duration and the `*/30 * * * *` schedule.
-That schedule requires Vercel Pro; Hobby currently permits only one cron
-invocation per day.
+`vercel.json` registers the function duration and the `0 0 * * *` schedule,
+which is compatible with Vercel Hobby's one-cron-invocation-per-day limit.
 
 Install and run the fetcher locally with:
 
@@ -144,7 +143,7 @@ scripts/
   refresh_instagram.py         Extraction, Blob snapshot, and local fallback helpers
   tests/                       Deterministic parser tests
 
-vercel.json                   Function settings and 30-minute cron registration
+vercel.json                   Function settings and daily cron registration
 requirements.txt              Python function/runtime dependencies
 tailwind.config.ts            Design tokens: obsidian/navy/crimson/gold palette, fonts
 postcss.config.js

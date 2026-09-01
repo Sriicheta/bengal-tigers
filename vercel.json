@@ -3,7 +3,7 @@
   "crons": [
     {
       "path": "/api/instagram_cron",
-      "schedule": "*/30 * * * *"
+      "schedule": "0 0 * * *"
     }
   ],
   "functions": {
