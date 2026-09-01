@@ -133,15 +133,6 @@ export const FAQ_ITEMS = [
   },
 ];
 
-export const INSTAGRAM_POSTS = [
-  { caption: "Nets before the night game", likes: "4.2K", comments: "128" },
-  { caption: "Boundary celebrations 🐯", likes: "6.8K", comments: "241" },
-  { caption: "Owners' box, matchday energy", likes: "3.1K", comments: "94" },
-  { caption: "Warm-up drills, first light", likes: "2.7K", comments: "63" },
-  { caption: "Trophy lift, season 3", likes: "9.4K", comments: "412", iconic: true },
-  { caption: "Fan meet-and-greet", likes: "5.5K", comments: "187" },
-];
-
 export const NAV_FOOTER_LINKS = [
   { label: "Home", href: "#top" },
   { label: "Team", href: "#roster" },

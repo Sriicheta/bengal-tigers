@@ -11,10 +11,83 @@ npm install
 npm run dev       # start the dev server (http://localhost:5173)
 npm run build     # type-check and produce a production build in /dist
 npm run preview   # serve the production build locally to sanity-check it
+npm run test:instagram
 ```
 
-No environment variables or extra setup are required — all images live in
-`src/assets` and are bundled by Vite.
+The static site can run without environment variables. Its live Instagram API
+uses the Vercel configuration below; a checked-in snapshot remains available as
+a local and outage fallback.
+
+## Instagram feed
+
+The live feed does not modify Git or rebuild the site:
+
+1. Vercel Cron calls the protected `/api/instagram_cron` function every 30
+   minutes.
+2. The function uses `gallery-dl`, sorts by publication date so old pinned posts
+   do not displace new posts, and writes the newest six posts to one private
+   Vercel Blob JSON object.
+3. The public, read-only `/api/instagram` function serves that stored snapshot.
+   Its response is cached on Vercel's CDN for five minutes.
+4. The Vite frontend requests `/api/instagram`. During plain local Vite
+   development, or if the API is unavailable, it falls back to the checked-in
+   `/data/instagram-posts.json` snapshot and local thumbnails.
+
+`vercel.json` registers the function duration and the `*/30 * * * *` schedule.
+That schedule requires Vercel Pro; Hobby currently permits only one cron
+invocation per day.
+
+Install and run the fetcher locally with:
+
+```bash
+python -m pip install -r requirements.txt
+npm run refresh:instagram
+```
+
+`npm run refresh:instagram` refreshes only the checked-in local fallback. With
+the Vercel Blob environment variables available, `npm run publish:instagram`
+publishes the dynamic backend snapshot instead.
+
+### Vercel configuration
+
+Before deploying:
+
+1. Create a **private Vercel Blob** store and connect it to the project. Vercel
+   supplies `BLOB_READ_WRITE_TOKEN`.
+2. Add a random `CRON_SECRET` of at least 16 characters. Vercel automatically
+   sends it as `Authorization: Bearer …` to the cron function.
+3. Add `INSTAGRAM_COOKIES_B64` as described below, because Instagram commonly
+   blocks anonymous automated requests.
+
+The Blob contains only public Instagram post metadata. Keeping it private makes
+`/api/instagram` the stable public contract and allows the bundled snapshot to
+take over automatically if Blob is unavailable.
+
+Instagram frequently rate-limits anonymous automation. If a public fetch is
+blocked, export a logged-in Instagram session to a Netscape cookie file and set
+either `INSTAGRAM_COOKIES_FILE` locally or the base64-encoded contents as the
+Vercel environment variable `INSTAGRAM_COOKIES_B64`. Cookie files matching
+`.instagram-cookies*` are gitignored and must never be committed.
+
+One way to create the narrowly scoped file with gallery-dl is:
+
+```bash
+gallery-dl --cookies-from-browser "chrome/instagram.com" \
+  --cookies-export .instagram-cookies.txt \
+  "https://www.instagram.com/bengaltigers.ccl/posts/"
+```
+
+On PowerShell, create the secret value without printing it to the terminal:
+
+```powershell
+[Convert]::ToBase64String(
+  [IO.File]::ReadAllBytes(".instagram-cookies.txt")
+) | Set-Clipboard
+$env:INSTAGRAM_COOKIES_FILE = (Resolve-Path ".instagram-cookies.txt")
+```
+
+Add the clipboard value as `INSTAGRAM_COOKIES_B64` in the Vercel project.
+Rotate the value when the Instagram session expires.
 
 ## Project structure
 
@@ -39,7 +112,7 @@ src/
       roster.tsx                Player carousel section wrapper
       head-coach.tsx            Dedicated Head Coach highlight panel
       faq.tsx                   CCL & Wildcards accordion
-      instagram-feed.tsx        Instagram post grid
+      instagram-feed.tsx        Fetches the dynamic API with a static fallback
       site-footer.tsx           Footer: logo, links, contact, socials
 
     ui/                       Reusable building blocks
@@ -59,6 +132,20 @@ src/
   assets/                     All images (logo, hero photo, owner/player/coach photos)
   lib/utils.ts                 `cn()` class-merging helper (clsx + tailwind-merge)
 
+public/
+  data/instagram-posts.json    Local/outage fallback feed
+  instagram/                   Local/outage fallback thumbnails
+
+api/
+  instagram.py                Public Blob-backed read endpoint
+  instagram_cron.py           Protected refresh endpoint invoked by Vercel Cron
+
+scripts/
+  refresh_instagram.py         Extraction, Blob snapshot, and local fallback helpers
+  tests/                       Deterministic parser tests
+
+vercel.json                   Function settings and 30-minute cron registration
+requirements.txt              Python function/runtime dependencies
 tailwind.config.ts            Design tokens: obsidian/navy/crimson/gold palette, fonts
 postcss.config.js
 vite.config.ts                Sets up the `@` → `src` path alias

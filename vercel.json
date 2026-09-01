@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/instagram_cron",
+      "schedule": "*/30 * * * *"
+    }
+  ],
+  "functions": {
+    "api/**/*.py": {
+      "maxDuration": 300,
+      "excludeFiles": "{node_modules/**,dist/**,src/**,public/instagram/**,scripts/tests/**,**/__pycache__/**}"
+    }
+  }
+}
