@@ -34,8 +34,8 @@ export { bengalTigersLogo, heroBatsman };
 export const HEADLINE_WORDS = ["Strength", "Passion", "Glory", "Heritage"];
 
 export const SEASON_RECORD = [
+  "Joined 2012",
   "2024 Champions",
-  "2025 Semi-Finalists",
   "2026 Runners-up",
 ];
 
@@ -49,9 +49,9 @@ export const CONTACT = {
 
 export const OWNERS = [
   {
-    name: "Bina Shah",
-    image: ownerBinaShah,
-    note: "Operations · Squad logistics and matchday command.",
+    name: "Boney Kapoor",
+    image: ownerBoneyKapoor,
+    note: "Chairman · Sets the ambition for the franchise.",
   },
   {
     name: "Arjun Kapoor",
@@ -59,9 +59,9 @@ export const OWNERS = [
     note: "Ambassador · The energy behind every boundary rope.",
   },
   {
-    name: "Boney Kapoor",
-    image: ownerBoneyKapoor,
-    note: "Chairman · Sets the ambition for the franchise.",
+    name: "Bina Shah",
+    image: ownerBinaShah,
+    note: "Operations · Squad logistics and matchday command.",
   },
 ];
 
@@ -86,7 +86,7 @@ export const PILLARS = [
 export const STATS = [
   { icon: Swords, label: "Matches Played", value: "125+" },
   { icon: Trophy, label: "Wins", value: "75+" },
-  { icon: Users, label: "Championships", value: "3" },
+  { icon: Users, label: "Championships", value: "1" },
   { icon: Globe2, label: "Fans Worldwide", value: "1M+" },
 ];
 
@@ -95,41 +95,38 @@ export const HEAD_COACH: Player = {
   name: "Saradindu Mukherjee",
   jerseyNumber: 0,
   image: headCoachSaradinduMukherjee,
+  role: "Head Coach",
   isCoach: true,
 };
 
 export const PLAYERS: Player[] = [
-  { id: "player-1", name: "Uday Pratap Singh", jerseyNumber: 1, image: playerUdayPratapSingh },
-  { id: "player-2", name: "Anirban Chakraborty", jerseyNumber: 2, image: playerAnirbanChakraborty },
-  { id: "player-3", name: "Bonny Sengupta", jerseyNumber: 3, image: playerBonnySengupta },
-  { id: "player-4", name: "Saurav Das", jerseyNumber: 4, image: playerSauravDas },
-  { id: "player-5", name: "Jishu Sengupta", jerseyNumber: 5, image: playerJishuSengupta },
-  { id: "player-6", name: "Ananda Choudhuri", jerseyNumber: 6, image: playerAnandaChoudhuri },
-  { id: "player-7", name: "Ratnadeep Ghosh", jerseyNumber: 7, image: playerRatnadeepGhosh },
-  { id: "player-8", name: "Joey Deb Roy", jerseyNumber: 8, image: playerJoeyDebRoy },
-  { id: "player-9", name: "Rahul Mazumdar", jerseyNumber: 9, image: playerRahulMazumdar },
-  { id: "player-10", name: "Joy Mukherjee", jerseyNumber: 10, image: playerJoyMukherjee },
-  { id: "player-11", name: "Jammy Banerjee", jerseyNumber: 11, image: playerJammyBanerjee },
+  { id: "player-5", name: "Jishu Sengupta", jerseyNumber: 5, image: playerJishuSengupta, role: "Captain" },
+  { id: "player-4", name: "Saurav Das", jerseyNumber: 4, image: playerSauravDas, role: "Wicket-Keeper" },
+  { id: "player-3", name: "Bonny Sengupta", jerseyNumber: 3, image: playerBonnySengupta, role: "Batter", battingStyle: "RHB" },
+  { id: "player-1", name: "Uday Pratap Singh", jerseyNumber: 1, image: playerUdayPratapSingh, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAM" },
+  { id: "player-2", name: "Anirban Chakraborty", jerseyNumber: 2, image: playerAnirbanChakraborty, role: "All-Rounder", battingStyle: "LHB", bowlingStyle: "RAM" },
+  { id: "player-6", name: "Ananda Choudhuri", jerseyNumber: 6, image: playerAnandaChoudhuri, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAO" },
+  { id: "player-7", name: "Ratnadeep Ghosh", jerseyNumber: 7, image: playerRatnadeepGhosh, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAL" },
+  { id: "player-8", name: "Joey Deb Roy", jerseyNumber: 8, image: playerJoeyDebRoy, role: "Batter", battingStyle: "RHB" },
+  { id: "player-9", name: "Rahul Mazumdar", jerseyNumber: 9, image: playerRahulMazumdar, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAM" },
+  { id: "player-10", name: "Joy Mukherjee", jerseyNumber: 10, image: playerJoyMukherjee, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAO" },
+  { id: "player-11", name: "Jammy Banerjee", jerseyNumber: 11, image: playerJammyBanerjee, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAM" },
 ];
 
 export const ROSTER: Player[] = PLAYERS;
 
 export const FAQ_ITEMS = [
   {
-    q: "What is CCL?",
-    a: "The Celebrity Cricket League is a T20-format tournament where teams of film and television personalities compete on the pitch, blending genuine cricketing skill with the entertainment world's biggest names.",
+    q: "What is the CCL Wildcard?",
+    a: "For the first time, passionate cricketers beyond the world of cinema have the opportunity to compete for a place within a CCL team and potentially share the field with some of India's biggest film stars. Introduced for CCL Season 13 in 2027, the CCL Wildcard provides a structured pathway for talented cricket enthusiasts to register, attend trials, showcase their ability and compete for an opportunity to represent a CCL franchise.",
   },
   {
-    q: "Who can participate?",
-    a: "Participation is open to actors, directors, and other recognised figures from regional film and entertainment industries, each drafted or retained by a franchise ahead of the season.",
+    q: "How can I represent Bengal Tigers?",
+    a: "For aspiring cricketers in Bengal, the Wildcard offers the opportunity to chase something extraordinary: earning a place alongside the stars of Bengal Tigers. Show your skill. Prove your fitness. Compete with the best. If you have what it takes, you could find yourself wearing the Bengal Tigers jersey and stepping onto the CCL stage. The Tigers are looking for their next player.",
   },
   {
-    q: "How does Wildcard selection work?",
-    a: "Wildcard slots let franchises bring in a late addition outside the standard draft, typically to fill a specific gap in the squad — an extra all-rounder, a specialist finisher, or a recognisable name for a particular fixture.",
-  },
-  {
-    q: "What is the Team Selection Process?",
-    a: "Squads are built through a mix of player retentions, an annual draft, and owner-nominated picks, with the final XI for each match chosen by the head coach and team management based on form and matchup.",
+    q: "Are you ready? How do I get started?",
+    a: "Register for the CCL Wildcard, prepare for the trials and give your cricketing journey the opportunity it deserves. Your cricket. Your chance. Your Bengal Tigers moment.",
   },
 ];
 
