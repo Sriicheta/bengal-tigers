@@ -1,4 +1,5 @@
 import * as React from "react";
+import { ExternalLink } from "lucide-react";
 
 import { SectionTag } from "@/components/ui/section-tag";
 import { AccordionItem } from "@/components/ui/accordion-item";
@@ -10,9 +11,9 @@ export function Faq() {
   return (
     <section id="ccl" className="border-t border-line bg-navy py-24">
       <div className="mx-auto max-w-4xl px-5 md:px-8">
-        <SectionTag>CCL &amp; Wildcards</SectionTag>
+        <SectionTag>CCL Wildcard</SectionTag>
         <h2 className="mt-4 font-serif text-3xl font-semibold text-white sm:text-4xl">
-          Questions, answered.
+          Your Chance. Your Cricket. Your Moment.
         </h2>
 
         <div className="mt-12">
@@ -26,6 +27,16 @@ export function Faq() {
             />
           ))}
         </div>
+
+        <a
+          href="https://www.cclcricket.com"
+          target="_blank"
+          rel="noreferrer"
+          className="mt-10 inline-flex items-center gap-2 rounded-full bg-crimson px-7 py-3 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-crimson-bright"
+        >
+          Register on CCLCricket.com
+          <ExternalLink className="h-4 w-4" />
+        </a>
       </div>
     </section>
   );

@@ -13,17 +13,22 @@ export function About() {
       <div className="relative mx-auto max-w-7xl px-5 md:px-8">
         <div className="grid gap-14 lg:grid-cols-2 lg:items-center">
           <div>
-            <SectionTag>About the Franchise</SectionTag>
+            <SectionTag>About Bengal Tigers</SectionTag>
             <h2 className="mt-4 font-serif text-3xl font-semibold text-white sm:text-4xl">
-              Carrying Bengal's Pride
+              Pride of Bengal. Passion for Cricket.
             </h2>
             <p className="mt-6 text-base leading-relaxed text-mist sm:text-lg">
-              Since taking the field, Bengal Tigers have carried the
-              region's cricketing pride into the Celebrity Cricket League —
-              a squad of performers who train like professionals and play
-              like it matters, because to the fans back home, it does.
-              Fearless batting, disciplined bowling, and a dressing room
-              that never stops backing itself, over after over.
+              Bengal Tigers represent the spirit, culture and cinematic
+              identity of Bengal on the Celebrity Cricket League stage.
+              Since joining the CCL in 2012, the franchise has brought
+              together some of Bengal's most popular actors and
+              personalities, united by a shared passion for cricket. That
+              journey delivered its defining moment in 2024, when Bengal
+              Tigers won their first CCL championship — and continued in
+              2026, defeating Kerala Strikers in the semi-final before
+              finishing runners-up to Karnataka Bulldozers in a closely
+              contested final. This is Bengal. This is our game. This is
+              Bengal Tigers.
             </p>
             <a
               href="#roster"

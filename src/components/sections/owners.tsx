@@ -27,12 +27,6 @@ export function Owners() {
                 <h3 className="font-serif text-xl font-semibold text-white">
                   {owner.name}
                 </h3>
-                <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.2em] text-crimson-bright">
-                  Owner
-                </p>
-                <p className="mt-3 text-sm leading-relaxed text-mist">
-                  {owner.note}
-                </p>
               </div>
             </GlowCard>
           ))}

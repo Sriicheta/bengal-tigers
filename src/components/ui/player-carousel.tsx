@@ -19,16 +19,26 @@ import { cn } from "@/lib/utils";
  */
 
 export type PlayerRole =
-  | "Batsman"
-  | "Bowler"
-  | "All-Rounder"
+  | "Captain"
   | "Wicket-Keeper"
+  | "All-Rounder"
+  | "Batter"
+  | "Bowler"
   | "Head Coach";
+
+/** RHB = Right-Hand Batsman, LHB = Left-Hand Batsman */
+export type BattingStyle = "RHB" | "LHB";
+
+/** RAM = Right-Arm Medium, RAO = Right-Arm Off-break, RAL = Right-Arm Leg-break,
+ *  LAM = Left-Arm Medium, LAO = Left-Arm Orthodox, LAL = Left-Arm Chinaman */
+export type BowlingStyle = "RAM" | "RAO" | "RAL" | "LAM" | "LAO" | "LAL";
 
 export interface Player {
   id: string;
   name: string;
   role?: PlayerRole;
+  battingStyle?: BattingStyle;
+  bowlingStyle?: BowlingStyle;
   jerseyNumber: number;
   /** Import path / URL for the player photo. */
   image: string;
@@ -146,7 +156,7 @@ const PlayerCard: React.FC<{ player: Player; index: number }> = ({
   return (
     <div
       className={cn(
-        "relative shrink-0 select-none overflow-hidden rounded-2xl border bg-navy-panel shadow-[0_1px_2px_rgba(0,0,0,0.35)] transition-shadow duration-300 hover:shadow-[0_20px_45px_-20px_rgba(0,0,0,0.6)]",
+        "group relative shrink-0 select-none overflow-hidden rounded-2xl border bg-navy-panel shadow-[0_1px_2px_rgba(0,0,0,0.35)] transition-shadow duration-300 hover:shadow-[0_20px_45px_-20px_rgba(0,0,0,0.6)]",
         player.isCoach ? "border-gold/50" : "border-line"
       )}
       style={{ width: CARD_WIDTH }}
@@ -174,9 +184,19 @@ const PlayerCard: React.FC<{ player: Player; index: number }> = ({
       </div>
 
       <div className="relative z-10 -mt-10 px-4 pb-5">
-        <h3 className="truncate font-serif text-lg font-semibold text-white">
+        {player.role && !player.isCoach && (
+          <span className="inline-flex origin-left items-center rounded-full border border-gold/40 bg-black/60 px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-gold shadow-sm backdrop-blur-sm transition-all duration-300 group-hover:scale-[1.06] group-hover:border-gold-bright/80 group-hover:bg-black/80 group-hover:text-gold-bright group-hover:shadow-[0_0_16px_-2px_rgba(229,193,88,0.6)]">
+            {player.role}
+          </span>
+        )}
+        <h3 className="mt-2 truncate font-serif text-lg font-semibold text-white">
           {player.name}
         </h3>
+        {(player.battingStyle || player.bowlingStyle) && (
+          <p className="mt-1 font-mono text-[11px] tracking-wide text-mist">
+            {[player.battingStyle, player.bowlingStyle].filter(Boolean).join(" · ")}
+          </p>
+        )}
         {(player.primaryStat || player.secondaryStat) && (
           <div className="mt-3 space-y-1 border-t border-line pt-3">
             {player.primaryStat && (

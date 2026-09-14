@@ -106,11 +106,11 @@ src/
     sections/                 One file per page section, in page order
       hero.tsx                 KineticGrid hero, headline, CTAs, season record
       owners.tsx                3 GlowCards for the team owners
-      about.tsx                 "Carrying Bengal's Pride" + pillar cards
+      about.tsx                 "Pride of Bengal. Passion for Cricket." + pillar cards
       stats.tsx                 Crimson stats banner with animated counters
       roster.tsx                Player carousel section wrapper
       head-coach.tsx            Dedicated Head Coach highlight panel
-      faq.tsx                   CCL & Wildcards accordion
+      faq.tsx                   CCL Wildcard accordion with registration CTA
       instagram-feed.tsx        Fetches the dynamic API with a static fallback
       site-footer.tsx           Footer: logo, links, contact, socials
 
@@ -165,8 +165,9 @@ routine content updates.
   production deploy, consider compressing them (e.g. via an image CDN or
   `vite-plugin-image-optimizer`) — the current `dist` build is correct but
   image-heavy.
-- Roles/positions (Batsman, Bowler, etc.) were intentionally removed from the
-  player cards per a later revision — only name and jersey number are shown.
+- Player cards show role badges (Captain, Wicket-Keeper, All-Rounder, Batter)
+  plus batting/bowling styles, restored from the UI bundle — see `PLAYERS` in
+  `site-data.ts` and `PlayerCarousel` in `player-carousel.tsx`.
 - The email address for the footer/contact section was left out, since no
   official one was provided — add it in `CONTACT` in `site-data.ts` when
   you have one.
