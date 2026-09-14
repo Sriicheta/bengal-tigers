@@ -11,6 +11,7 @@ from api.instagram_cron import cron_authorization_status  # noqa: E402
 from refresh_instagram import (  # noqa: E402
     POSTS_URL,
     _cookie_jar_from_environment,
+    _safe_response_diagnosis,
     extract_posts,
     extract_with_gallery_dl,
     extract_with_instagram_api,
@@ -415,6 +416,118 @@ class CookieJarParsingTests(unittest.TestCase):
                 posts = extract_with_instagram_api()
         self.assertEqual(len(posts), 1)
         self.assertEqual(posts[0]["shortcode"], "Abc123")
+
+
+class ResponseDiagnosisTests(unittest.TestCase):
+    SECRET = "sess-fake-secret-9f8e7d"
+
+    def _fake_jar(self):
+        from types import SimpleNamespace
+
+        return [
+            SimpleNamespace(name="sessionid", value="sess"),
+            SimpleNamespace(name="csrftoken", value="csrf"),
+        ]
+
+    def _response(self, status=200, url="https://www.instagram.com/api/v1/feed/user/64565332872/",
+                  content_type="application/json", body=b"", json_data=None, json_raises=True):
+        from unittest.mock import MagicMock
+
+        response = MagicMock()
+        response.status_code = status
+        response.url = url
+        response.headers = {"content-type": content_type}
+        response.content = body
+        response.text = body.decode("utf-8", errors="replace")
+        if json_raises:
+            response.json.side_effect = ValueError("No JSON object could be decoded")
+        else:
+            response.json.return_value = json_data
+        return response
+
+    def _run_extract(self, response):
+        import refresh_instagram
+        from unittest.mock import MagicMock
+
+        session = MagicMock()
+        session.get.return_value = response
+        with patch.dict(
+            "os.environ",
+            {"INSTAGRAM_USER_ID": "64565332872", "INSTAGRAM_COOKIES_B64": "eA=="},
+            clear=True,
+        ):
+            with patch.object(
+                refresh_instagram, "_cookie_jar_from_environment", return_value=self._fake_jar()
+            ):
+                with patch.object(refresh_instagram.requests, "Session", return_value=session):
+                    return extract_with_instagram_api()
+
+    def test_html_login_page_reports_expired_session(self):
+        body = (
+            b"<html><form id='loginForm' action='/accounts/login/'>"
+            b"Log in <input name='username_or_email'/></form></html>"
+        )
+        response = self._response(content_type="text/html; charset=utf-8", body=body)
+        with self.assertRaisesRegex(RuntimeError, "requires login"):
+            self._run_extract(response)
+
+    def test_login_redirect_url_reports_expired_session(self):
+        response = self._response(
+            content_type="text/html",
+            url="https://www.instagram.com/accounts/login/?next=/api/v1/feed/user/",
+            body=b"<html>login</html>",
+        )
+        with self.assertRaisesRegex(RuntimeError, "requires login"):
+            self._run_extract(response)
+
+    def test_challenge_page_reports_verification(self):
+        body = b"<html><h1>checkpoint required</h1><p>unusual activity, verify it was you</p></html>"
+        response = self._response(content_type="text/html", body=body)
+        with self.assertRaisesRegex(RuntimeError, "[Vv]erification|challenge"):
+            self._run_extract(response)
+
+    def test_generic_html_keeps_unexpected_response(self):
+        response = self._response(content_type="text/html", body=b"<html><body>hello</body></html>")
+        with self.assertRaisesRegex(RuntimeError, "unexpected response"):
+            self._run_extract(response)
+
+    def test_empty_body_keeps_unexpected_response(self):
+        response = self._response(body=b"")
+        with self.assertRaisesRegex(RuntimeError, "unexpected response"):
+            self._run_extract(response)
+
+    def test_json_list_keeps_unexpected_response(self):
+        response = self._response(body=b"[1,2]", json_data=[1, 2], json_raises=False)
+        with self.assertRaisesRegex(RuntimeError, "unexpected response"):
+            self._run_extract(response)
+
+    def test_fail_status_reports_rejected_request(self):
+        payload = {"status": "fail", "message": "checkpoint_required"}
+        response = self._response(body=b"{}", json_data=payload, json_raises=False)
+        with self.assertRaisesRegex(RuntimeError, "rejected the request"):
+            self._run_extract(response)
+
+    def test_diagnosis_lists_keys_but_never_secrets(self):
+        payload = {"items": [], "session_echo": self.SECRET}
+        response = self._response(body=b'{"items":[]}', json_data=payload, json_raises=False)
+        summary = _safe_response_diagnosis(response)
+        self.assertIn("status 200", summary)
+        self.assertIn("items", summary)
+        self.assertNotIn(self.SECRET, summary)
+
+    def test_error_message_never_contains_body_or_secrets(self):
+        body = ("<html>login " + self.SECRET + "</html>").encode("utf-8")
+        response = self._response(content_type="text/html", body=body)
+        response.headers = {
+            "content-type": "text/html",
+            "set-cookie": f"sessionid={self.SECRET}; Domain=.instagram.com",
+        }
+        try:
+            self._run_extract(response)
+            self.fail("expected RuntimeError")
+        except RuntimeError as error:
+            self.assertNotIn(self.SECRET, str(error))
+            self.assertIn("status 200", str(error))
 
 
 class ApiTests(unittest.TestCase):

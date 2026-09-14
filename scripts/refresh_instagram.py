@@ -476,9 +476,77 @@ def parse_rest_item(item: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
+def _classify_html_page(text: str) -> str:
+    """Classify an HTML body as login/challenge/generic from marker flags only.
+
+    Inspects the body but returns just a label — never excerpts — so no
+    private content can leak into logs or API responses.
+    """
+    lowered = text.lower()
+    challenge_markers = ("checkpoint", "challenge", "suspicious", "unusual activity", "verify")
+    if any(marker in lowered for marker in challenge_markers):
+        return "challenge"
+    login_markers = ("accounts/login", "loginform", "login_button", "username_or_email")
+    if any(marker in lowered for marker in login_markers):
+        return "login"
+    return "generic"
+
+
+def _safe_response_diagnosis(response: Any) -> str:
+    """One-line safe summary of an Instagram response for logs and errors.
+
+    Records only the HTTP status, final URL path (query stripped), content
+    type, body size, and either JSON top-level keys or an HTML page class.
+    Never includes bodies, headers, cookies, or tokens.
+    """
+    try:
+        status = response.status_code
+    except Exception:
+        return "status unknown"
+    try:
+        final_url = str(getattr(response, "url", "") or "")
+        final_path = final_url.split("?", 1)[0].split("#", 1)[0] or "(no url)"
+    except Exception:
+        final_path = "(no url)"
+    try:
+        headers = getattr(response, "headers", {}) or {}
+        content_type = str(headers.get("content-type", "") or "").split(";")[0].strip().lower()
+    except Exception:
+        content_type = ""
+    try:
+        raw = getattr(response, "content", None)
+        size = len(raw) if raw is not None else -1
+    except Exception:
+        size = -1
+    detail = f"status {status}, path {final_path}, content-type {content_type or 'unknown'}, {size} bytes"
+    try:
+        data = response.json()
+    except Exception:
+        page_class = "unknown"
+        try:
+            page_class = _classify_html_page(response.text)
+        except Exception:
+            pass
+        return f"{detail}, non-JSON {page_class} page"
+    if isinstance(data, dict):
+        try:
+            keys = sorted(str(key) for key in data.keys())[:12]
+        except Exception:
+            keys = []
+        return f"{detail}, JSON keys: {', '.join(keys) if keys else '(none)'}"
+    return f"{detail}, JSON type: {type(data).__name__}"
+
+
 def parse_rest_feed(data: Any) -> list[dict[str, Any]]:
     """Turn an Instagram REST feed response into up to POST_LIMIT posts."""
-    items = data.get("items") if isinstance(data, dict) else None
+    if not isinstance(data, dict):
+        raise RuntimeError("Instagram returned an unexpected response")
+    if data.get("status") == "fail":
+        raise RuntimeError(
+            "Instagram rejected the request;"
+            " export fresh cookies and update INSTAGRAM_COOKIES_B64."
+        )
+    items = data.get("items")
     if not isinstance(items, list) or not items:
         raise RuntimeError("Instagram returned no usable posts")
     posts: list[dict[str, Any]] = []
@@ -550,10 +618,65 @@ def extract_with_instagram_api() -> list[dict[str, Any]]:
         if response.status_code >= 400:
             raise RuntimeError(f"Instagram request failed with status {response.status_code}")
         try:
+            final_path = str(getattr(response, "url", "") or "").split("?", 1)[0]
+        except Exception:
+            final_path = ""
+        if "accounts/login" in final_path:
+            raise RuntimeError(
+                "Instagram requires login (session expired);"
+                " export fresh cookies and update INSTAGRAM_COOKIES_B64"
+                f" [{_safe_response_diagnosis(response)}]."
+            )
+        try:
+            content_type = str((response.headers.get("content-type", "") or "").split(";")[0]).strip().lower()
+        except Exception:
+            content_type = ""
+        if content_type.startswith("text/html"):
+            try:
+                page_class = _classify_html_page(response.text)
+            except Exception:
+                page_class = "unknown"
+            if page_class == "login":
+                raise RuntimeError(
+                    "Instagram requires login (session expired);"
+                    " export fresh cookies and update INSTAGRAM_COOKIES_B64"
+                    f" [{_safe_response_diagnosis(response)}]."
+                )
+            if page_class == "challenge":
+                raise RuntimeError(
+                    "Instagram asked for verification (challenge);"
+                    " log in as the alt account, clear the challenge,"
+                    " then export fresh cookies and update INSTAGRAM_COOKIES_B64"
+                    f" [{_safe_response_diagnosis(response)}]."
+                )
+            raise RuntimeError(
+                "Instagram returned an unexpected response"
+                f" [{_safe_response_diagnosis(response)}]."
+            )
+        try:
+            raw_content = response.content
+        except Exception:
+            raw_content = None
+        if not raw_content:
+            raise RuntimeError(
+                "Instagram returned an unexpected response"
+                f" [{_safe_response_diagnosis(response)}]."
+            )
+        try:
             data = response.json()
         except ValueError as error:
-            raise RuntimeError("Instagram returned an unexpected response") from error
-        return parse_rest_feed(data)
+            raise RuntimeError(
+                "Instagram returned an unexpected response"
+                f" [{_safe_response_diagnosis(response)}]."
+            ) from error
+        try:
+            return parse_rest_feed(data)
+        except RuntimeError as error:
+            if "unexpected response" in str(error):
+                raise RuntimeError(
+                    f"{error} [{_safe_response_diagnosis(response)}]."
+                ) from error
+            raise
 
 
 def extract_posts() -> list[dict[str, Any]]:
