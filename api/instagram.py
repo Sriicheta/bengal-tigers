@@ -6,8 +6,15 @@ import copy
 import json
 import sys
 from http.server import BaseHTTPRequestHandler
+from pathlib import Path
 
-from scripts.refresh_instagram import load_feed_snapshot
+# Same import guard as the cron endpoint: keep api/ -> scripts/ imports working
+# regardless of the function's working directory on Vercel.
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
+from scripts.refresh_instagram import load_feed_snapshot  # noqa: E402
 
 
 def _request_origin(request: BaseHTTPRequestHandler) -> str:
