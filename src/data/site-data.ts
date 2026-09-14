@@ -100,11 +100,11 @@ export const HEAD_COACH: Player = {
 };
 
 export const PLAYERS: Player[] = [
-  { id: "player-5", name: "Jishu Sengupta", jerseyNumber: 5, image: playerJishuSengupta, role: "Captain" },
-  { id: "player-4", name: "Saurav Das", jerseyNumber: 4, image: playerSauravDas, role: "Wicket-Keeper" },
+  { id: "player-5", name: "Jishu Sengupta", jerseyNumber: 1, image: playerJishuSengupta, role: "Captain" },
+  { id: "player-4", name: "Saurav Das", jerseyNumber: 2, image: playerSauravDas, role: "Wicket-Keeper" },
   { id: "player-3", name: "Bonny Sengupta", jerseyNumber: 3, image: playerBonnySengupta, role: "Batter", battingStyle: "RHB" },
-  { id: "player-1", name: "Uday Pratap Singh", jerseyNumber: 1, image: playerUdayPratapSingh, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAM" },
-  { id: "player-2", name: "Anirban Chakraborty", jerseyNumber: 2, image: playerAnirbanChakraborty, role: "All-Rounder", battingStyle: "LHB", bowlingStyle: "RAM" },
+  { id: "player-1", name: "Uday Pratap Singh", jerseyNumber: 4, image: playerUdayPratapSingh, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAM" },
+  { id: "player-2", name: "Anirban Chakraborty", jerseyNumber: 5, image: playerAnirbanChakraborty, role: "All-Rounder", battingStyle: "LHB", bowlingStyle: "RAM" },
   { id: "player-6", name: "Ananda Choudhuri", jerseyNumber: 6, image: playerAnandaChoudhuri, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAO" },
   { id: "player-7", name: "Ratnadeep Ghosh", jerseyNumber: 7, image: playerRatnadeepGhosh, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAL" },
   { id: "player-8", name: "Joey Deb Roy", jerseyNumber: 8, image: playerJoeyDebRoy, role: "Batter", battingStyle: "RHB" },
