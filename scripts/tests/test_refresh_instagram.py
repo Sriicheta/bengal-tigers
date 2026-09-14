@@ -10,6 +10,7 @@ from api.instagram import _absolute_fallback_images  # noqa: E402
 from api.instagram_cron import cron_authorization_status  # noqa: E402
 from refresh_instagram import (  # noqa: E402
     POSTS_URL,
+    _cookie_jar_from_environment,
     extract_posts,
     extract_with_gallery_dl,
     extract_with_instagram_api,
@@ -300,6 +301,120 @@ class ExtractWithInstagramApiTests(unittest.TestCase):
             with patch.object(refresh_instagram, "extract_with_gallery_dl", return_value=sentinel) as gallery:
                 self.assertEqual(extract_posts(), sentinel)
                 gallery.assert_called_once()
+
+
+class CookieJarParsingTests(unittest.TestCase):
+    def _netscape_line(self, domain=".instagram.com", path="/", name="sessionid", value="sess", expires="9999999999"):
+        return "\t".join([domain, "TRUE", path, "TRUE", expires, name, value])
+
+    def _production_like_text(self):
+        # Mirrors the reported production file: no magic header, 7 tab fields,
+        # duplicate csrftoken/sessionid entries for .instagram.com.
+        return "\n".join([
+            self._netscape_line(path="/", name="csrftoken", value="csrf-a"),
+            self._netscape_line(path="/", name="sessionid", value="sess-a"),
+            self._netscape_line(path="/", name="csrftoken", value="csrf-b"),
+            self._netscape_line(path="/", name="sessionid", value="sess-b"),
+            "",
+        ]) + "\n"
+
+    def _jar_from_b64_text(self, text):
+        import base64
+        import contextlib
+
+        encoded = base64.b64encode(text.encode("utf-8")).decode("ascii")
+        with patch.dict("os.environ", {"INSTAGRAM_COOKIES_B64": encoded}, clear=True):
+            with contextlib.ExitStack() as stack:
+                return _cookie_jar_from_environment(stack)
+
+    def test_headerless_duplicates_parse(self):
+        jar = self._jar_from_b64_text(self._production_like_text())
+        names = {cookie.name for cookie in jar}
+        self.assertIn("sessionid", names)
+        self.assertIn("csrftoken", names)
+        session_values = [cookie.value for cookie in jar if cookie.name == "sessionid" and cookie.value]
+        self.assertTrue(session_values)
+
+    def test_magic_header_still_parses(self):
+        text = "# Netscape HTTP Cookie File\n" + self._production_like_text()
+        jar = self._jar_from_b64_text(text)
+        self.assertIn("sessionid", {cookie.name for cookie in jar})
+
+    def test_httponly_comments_and_malformed_lines_skipped(self):
+        text = "\n".join([
+            "# This is a comment",
+            "",
+            "not-a-cookie-line",
+            "a\tb\tc",
+            "#HttpOnly.instagram.com\tTRUE\t/\tTRUE\t9999999999\tsessionid\tsess-h",
+            self._netscape_line(name="csrftoken", value="csrf-h"),
+        ]) + "\n"
+        jar = self._jar_from_b64_text(text)
+        names = {cookie.name for cookie in jar}
+        self.assertIn("sessionid", names)
+        self.assertIn("csrftoken", names)
+
+    def test_garbage_raises_parse_error(self):
+        import contextlib
+
+        import base64
+
+        encoded = base64.b64encode(b"no cookies here\njust text\n").decode("ascii")
+        with patch.dict("os.environ", {"INSTAGRAM_COOKIES_B64": encoded}, clear=True):
+            with contextlib.ExitStack() as stack:
+                with self.assertRaisesRegex(RuntimeError, "could not be parsed"):
+                    _cookie_jar_from_environment(stack)
+
+    def test_cookie_file_path_headerless_parses(self):
+        import contextlib
+        import tempfile
+        import os
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, "cookies.txt")
+            with open(path, "w", encoding="utf-8") as handle:
+                handle.write(self._production_like_text())
+            with patch.dict("os.environ", {"INSTAGRAM_COOKIES_FILE": path}, clear=True):
+                with contextlib.ExitStack() as stack:
+                    jar = _cookie_jar_from_environment(stack)
+        self.assertIn("sessionid", {cookie.name for cookie in jar})
+
+    def test_extract_api_works_with_production_like_cookies(self):
+        import base64
+        import refresh_instagram
+
+        encoded = base64.b64encode(self._production_like_text().encode("utf-8")).decode("ascii")
+
+        def _photo_item(code="Abc123"):
+            return {
+                "pk": "123",
+                "code": code,
+                "taken_at": 1756680000,
+                "like_count": 5,
+                "comment_count": 1,
+                "caption": {"text": "Hi"},
+                "media_type": 1,
+                "product_type": "feed",
+                "image_versions2": {"candidates": [{"url": "https://cdn.example/a.jpg"}]},
+            }
+
+        from unittest.mock import MagicMock
+
+        response = MagicMock()
+        response.status_code = 200
+        response.json.return_value = {"items": [_photo_item()]}
+        session = MagicMock()
+        session.get.return_value = response
+
+        with patch.dict(
+            "os.environ",
+            {"INSTAGRAM_USER_ID": "64565332872", "INSTAGRAM_COOKIES_B64": encoded},
+            clear=True,
+        ):
+            with patch.object(refresh_instagram.requests, "Session", return_value=session):
+                posts = extract_with_instagram_api()
+        self.assertEqual(len(posts), 1)
+        self.assertEqual(posts[0]["shortcode"], "Abc123")
 
 
 class ApiTests(unittest.TestCase):

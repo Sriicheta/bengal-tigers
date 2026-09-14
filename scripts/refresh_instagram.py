@@ -297,8 +297,72 @@ def extract_with_gallery_dl() -> list[dict[str, Any]]:
             raise
 
 
+def _parse_netscape_text(text: str, jar) -> int:
+    """Parse Netscape cookies.txt content into ``jar``; return cookies added.
+
+    Tolerant where ``MozillaCookieJar.load()`` is strict: the magic header
+    (``# Netscape HTTP Cookie File``) is optional, ``#HttpOnly``-prefixed data
+    lines are accepted, comments/blank/malformed lines are skipped, and
+    duplicate entries simply overwrite each other via ``set_cookie``.
+    Expects the standard 7 tab-separated fields per data line.
+    """
+    import http.cookiejar
+
+    added = 0
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        if line.startswith("#HttpOnly"):
+            line = line[len("#HttpOnly"):].lstrip()
+        elif line.startswith("#"):
+            continue
+        parts = line.split("\t")
+        if len(parts) != 7:
+            continue
+        domain = parts[0].strip()
+        path = parts[2].strip() or "/"
+        secure = parts[3].strip().upper() == "TRUE"
+        name = parts[5].strip()
+        value = parts[6].strip()
+        if not domain or not name:
+            continue
+        try:
+            expires = int(parts[4].strip()) if parts[4].strip() else 0
+        except ValueError:
+            continue
+        initial_dot = domain.startswith(".")
+        jar.set_cookie(http.cookiejar.Cookie(
+            version=0,
+            name=name,
+            value=value,
+            port=None,
+            port_specified=False,
+            domain=domain,
+            domain_specified=initial_dot,
+            domain_initial_dot=initial_dot,
+            path=path,
+            path_specified=True,
+            secure=secure,
+            expires=expires,
+            discard=False,
+            comment=None,
+            comment_url=None,
+            rest={},
+            rfc2109=False,
+        ))
+        added += 1
+    return added
+
+
 def _cookie_jar_from_environment(stack: contextlib.ExitStack):
-    """Load Instagram cookies into a jar without ever logging secret values."""
+    """Load Instagram cookies into a jar without ever logging secret values.
+
+    Parses Netscape-format content directly (no ``MozillaCookieJar.load()``),
+    because browser exports usually omit the magic header line that ``load()``
+    requires — that strictness was rejecting valid cookie files with
+    "Instagram cookies could not be parsed".
+    """
     import http.cookiejar
 
     cookie_path = (os.environ.get("INSTAGRAM_COOKIES_FILE") or "").strip()
@@ -306,8 +370,13 @@ def _cookie_jar_from_environment(stack: contextlib.ExitStack):
         resolved = Path(cookie_path).expanduser().resolve()
         if not resolved.is_file():
             raise RuntimeError(f"INSTAGRAM_COOKIES_FILE does not exist: {resolved}")
-        jar = http.cookiejar.MozillaCookieJar(str(resolved))
-        jar.load(ignore_discard=True, ignore_expires=True)
+        try:
+            text = resolved.read_text(encoding="utf-8-sig")
+        except OSError as error:
+            raise RuntimeError("Instagram cookies could not be parsed") from error
+        jar = http.cookiejar.MozillaCookieJar()
+        if not _parse_netscape_text(text, jar):
+            raise RuntimeError("Instagram cookies could not be parsed")
         return jar
 
     encoded = (os.environ.get("INSTAGRAM_COOKIES_B64") or "").strip()
@@ -321,14 +390,13 @@ def _cookie_jar_from_environment(stack: contextlib.ExitStack):
     if not cookie_bytes:
         raise RuntimeError("INSTAGRAM_COOKIES_B64 decoded to empty content")
 
-    temporary = Path(stack.enter_context(tempfile.TemporaryDirectory(prefix="instagram-cookies-")))
-    cookie_file = temporary / "cookies.txt"
-    cookie_file.write_bytes(cookie_bytes)
-    jar = http.cookiejar.MozillaCookieJar(str(cookie_file))
     try:
-        jar.load(ignore_discard=True, ignore_expires=True)
-    except Exception as error:
+        text = cookie_bytes.decode("utf-8-sig")
+    except UnicodeDecodeError as error:
         raise RuntimeError("Instagram cookies could not be parsed") from error
+    jar = http.cookiejar.MozillaCookieJar()
+    if not _parse_netscape_text(text, jar):
+        raise RuntimeError("Instagram cookies could not be parsed")
     return jar
 
 
