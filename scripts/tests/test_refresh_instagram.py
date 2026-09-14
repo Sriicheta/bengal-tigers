@@ -11,13 +11,17 @@ from api.instagram_cron import cron_authorization_status  # noqa: E402
 from refresh_instagram import (  # noqa: E402
     POSTS_URL,
     _cookie_jar_from_environment,
+    _instagrapi_device_seed,
     _safe_response_diagnosis,
+    _sessionid_from_jar,
     extract_posts,
     extract_with_gallery_dl,
     extract_with_instagram_api,
+    extract_with_instagrapi,
     instagram_target_url,
     instagram_user_id,
     parse_gallery_payload,
+    parse_instagrapi_media,
     parse_rest_feed,
     parse_rest_item,
     publish_feed_to_blob,
@@ -283,16 +287,32 @@ class ExtractWithInstagramApiTests(unittest.TestCase):
                     with self.assertRaisesRegex(RuntimeError, "rejected the session"):
                         extract_with_instagram_api()
 
-    def test_extract_posts_routes_to_api_when_id_set(self):
+    def test_extract_posts_routes_to_instagrapi_when_id_set(self):
         import refresh_instagram
 
         sentinel = [{"id": "x"}]
         with patch.dict("os.environ", {"INSTAGRAM_USER_ID": "64565332872"}, clear=True):
-            with patch.object(refresh_instagram, "extract_with_instagram_api", return_value=sentinel) as api:
-                with patch.object(refresh_instagram, "extract_with_gallery_dl") as gallery:
-                    self.assertEqual(extract_posts(), sentinel)
-                    api.assert_called_once()
-                    gallery.assert_not_called()
+            with patch.object(refresh_instagram, "extract_with_instagrapi", return_value=sentinel) as iga:
+                with patch.object(refresh_instagram, "extract_with_instagram_api") as api:
+                    with patch.object(refresh_instagram, "extract_with_gallery_dl") as gallery:
+                        self.assertEqual(extract_posts(), sentinel)
+                        iga.assert_called_once()
+                        api.assert_not_called()
+                        gallery.assert_not_called()
+
+    def test_extract_posts_falls_back_to_rest_when_instagrapi_fails(self):
+        import refresh_instagram
+
+        sentinel = [{"id": "x"}]
+        with patch.dict("os.environ", {"INSTAGRAM_USER_ID": "64565332872"}, clear=True):
+            with patch.object(
+                refresh_instagram, "extract_with_instagrapi", side_effect=RuntimeError("challenge")
+            ):
+                with patch.object(refresh_instagram, "extract_with_instagram_api", return_value=sentinel) as api:
+                    with patch.object(refresh_instagram, "extract_with_gallery_dl") as gallery:
+                        self.assertEqual(extract_posts(), sentinel)
+                        api.assert_called_once()
+                        gallery.assert_not_called()
 
     def test_extract_posts_falls_back_to_gallery_dl(self):
         import refresh_instagram
@@ -528,6 +548,244 @@ class ResponseDiagnosisTests(unittest.TestCase):
         except RuntimeError as error:
             self.assertNotIn(self.SECRET, str(error))
             self.assertIn("status 200", str(error))
+
+
+class _FakeLoginRequired(Exception):
+    pass
+
+
+class _FakeChallengeRequired(Exception):
+    pass
+
+
+class _FakeClientThrottledError(Exception):
+    pass
+
+
+class InstagrapiTests(unittest.TestCase):
+    SECRET = "sess-fake-secret-7c2e1a"
+
+    def _photo_media(self, code="Abc123", taken_at=None):
+        from datetime import datetime, timezone
+        from types import SimpleNamespace
+
+        return SimpleNamespace(
+            code=code,
+            taken_at=taken_at or datetime(2026, 8, 20, 12, 0, tzinfo=timezone.utc),
+            media_type=1,
+            product_type="feed",
+            thumbnail_url="https://cdn.example/a.jpg",
+            caption_text="Hello",
+            like_count=10,
+            comment_count=2,
+        )
+
+    def _fake_instagrapi(self, medias=None, login_result=True, login_error=None, medias_error=None):
+        import sys
+        import types
+
+        calls = {}
+
+        fake_exceptions = types.ModuleType("instagrapi.exceptions")
+        fake_exceptions.LoginRequired = _FakeLoginRequired
+        fake_exceptions.ClientLoginRequired = _FakeLoginRequired
+        fake_exceptions.ChallengeRequired = _FakeChallengeRequired
+        fake_exceptions.ClientThrottledError = _FakeClientThrottledError
+
+        class FakeClient:
+            def __init__(self, *args, **kwargs):
+                calls["init"] = True
+
+            def login_by_sessionid(self, sessionid):
+                calls["sessionid"] = sessionid
+                if login_error is not None:
+                    raise login_error
+                return login_result
+
+            def user_medias(self, user_id, amount=0, sleep=0):
+                calls["user_id"] = user_id
+                calls["amount"] = amount
+                if medias_error is not None:
+                    raise medias_error
+                return list(medias or [])
+
+        fake_module = types.ModuleType("instagrapi")
+        fake_module.Client = FakeClient
+        fake_module.exceptions = fake_exceptions
+        return fake_module, fake_exceptions, calls
+
+    def _fake_jar(self, session_value="sess", domain=".instagram.com"):
+        from types import SimpleNamespace
+
+        return [
+            SimpleNamespace(name="sessionid", value=session_value, domain=domain),
+            SimpleNamespace(name="csrftoken", value="csrf", domain=domain),
+        ]
+
+    def _run_with_fake_module(self, fake_module, test_body):
+        import sys
+
+        real = sys.modules.get("instagrapi")
+        real_exceptions = sys.modules.get("instagrapi.exceptions")
+        sys.modules["instagrapi"] = fake_module
+        sys.modules["instagrapi.exceptions"] = fake_module.exceptions
+        try:
+            return test_body()
+        finally:
+            if real is not None:
+                sys.modules["instagrapi"] = real
+            else:
+                sys.modules.pop("instagrapi", None)
+            if real_exceptions is not None:
+                sys.modules["instagrapi.exceptions"] = real_exceptions
+            else:
+                sys.modules.pop("instagrapi.exceptions", None)
+
+    def test_photo_media_maps_to_post(self):
+        post = parse_instagrapi_media(self._photo_media())
+        self.assertEqual(post["shortcode"], "Abc123")
+        self.assertEqual(post["url"], "https://www.instagram.com/p/Abc123/")
+        self.assertEqual(post["type"], "post")
+        self.assertEqual(post["sourceImage"], "https://cdn.example/a.jpg")
+        self.assertEqual(post["likes"], 10)
+        self.assertTrue(post["publishedAt"].endswith("Z"))
+
+    def test_clips_media_maps_to_reel(self):
+        from types import SimpleNamespace
+
+        base = self._photo_media(code="Reel1")
+        base.product_type = "clips"
+        base.media_type = 2
+        post = parse_instagrapi_media(base)
+        self.assertEqual(post["type"], "reel")
+        self.assertEqual(post["url"], "https://www.instagram.com/reel/Reel1/")
+
+    def test_media_without_usable_content_skipped(self):
+        self.assertIsNone(parse_instagrapi_media(self._photo_media(code="")))
+        no_thumb = self._photo_media()
+        no_thumb.thumbnail_url = None
+        self.assertIsNone(parse_instagrapi_media(no_thumb))
+        self.assertIsNone(parse_instagrapi_media(None))
+
+    def test_device_seed_stable_per_user(self):
+        first = _instagrapi_device_seed("64565332872")
+        second = _instagrapi_device_seed("64565332872")
+        self.assertEqual(first, second)
+        other = _instagrapi_device_seed("123")
+        self.assertNotEqual(first["uuid"], other["uuid"])
+        self.assertTrue(first["android_device_id"].startswith("android-"))
+
+    def test_sessionid_prefers_instagram_domain(self):
+        from types import SimpleNamespace
+
+        jar = [
+            SimpleNamespace(name="sessionid", value="other-site", domain=".example.com"),
+            SimpleNamespace(name="sessionid", value="ig-site", domain=".instagram.com"),
+        ]
+        self.assertEqual(_sessionid_from_jar(jar), "ig-site")
+
+    def test_extract_success_uses_sessionid_and_user_id(self):
+        import refresh_instagram
+
+        fake_module, _, calls = self._fake_instagrapi(medias=[self._photo_media()])
+
+        def body():
+            with patch.dict(
+                "os.environ", {"INSTAGRAM_USER_ID": "64565332872"}, clear=True
+            ):
+                with patch.object(
+                    refresh_instagram, "_cookie_jar_from_environment",
+                    return_value=self._fake_jar(session_value="sess-ok"),
+                ):
+                    return extract_with_instagrapi()
+
+        posts = self._run_with_fake_module(fake_module, body)
+        self.assertEqual(len(posts), 1)
+        self.assertEqual(posts[0]["shortcode"], "Abc123")
+        self.assertEqual(calls["sessionid"], "sess-ok")
+        self.assertEqual(calls["user_id"], "64565332872")
+
+    def test_login_required_reports_session_refresh(self):
+        import refresh_instagram
+
+        fake_module, fake_exceptions, _ = self._fake_instagrapi(
+            login_error=_FakeLoginRequired("login_required")
+        )
+
+        def body():
+            with patch.dict(
+                "os.environ", {"INSTAGRAM_USER_ID": "64565332872"}, clear=True
+            ):
+                with patch.object(
+                    refresh_instagram, "_cookie_jar_from_environment",
+                    return_value=self._fake_jar(),
+                ):
+                    with self.assertRaisesRegex(RuntimeError, "rejected the session"):
+                        extract_with_instagrapi()
+
+        self._run_with_fake_module(fake_module, body)
+
+    def test_challenge_reports_verification(self):
+        import refresh_instagram
+
+        fake_module, fake_exceptions, _ = self._fake_instagrapi(
+            medias_error=_FakeChallengeRequired("challenge")
+        )
+
+        def body():
+            with patch.dict(
+                "os.environ", {"INSTAGRAM_USER_ID": "64565332872"}, clear=True
+            ):
+                with patch.object(
+                    refresh_instagram, "_cookie_jar_from_environment",
+                    return_value=self._fake_jar(),
+                ):
+                    with self.assertRaisesRegex(RuntimeError, "[Vv]erification|challenge"):
+                        extract_with_instagrapi()
+
+        self._run_with_fake_module(fake_module, body)
+
+    def test_missing_library_reports_requirements(self):
+        import sys
+
+        import refresh_instagram
+
+        real = sys.modules.get("instagrapi")
+        sys.modules["instagrapi"] = None
+        try:
+            with patch.dict(
+                "os.environ", {"INSTAGRAM_USER_ID": "64565332872"}, clear=True
+            ):
+                with self.assertRaisesRegex(RuntimeError, "instagrapi is not installed"):
+                    extract_with_instagrapi()
+        finally:
+            if real is not None:
+                sys.modules["instagrapi"] = real
+            else:
+                sys.modules.pop("instagrapi", None)
+
+    def test_error_never_contains_session_value(self):
+        import refresh_instagram
+
+        fake_module, fake_exceptions, _ = self._fake_instagrapi(
+            medias_error=_FakeChallengeRequired("challenge")
+        )
+
+        def body():
+            with patch.dict(
+                "os.environ", {"INSTAGRAM_USER_ID": "64565332872"}, clear=True
+            ):
+                with patch.object(
+                    refresh_instagram, "_cookie_jar_from_environment",
+                    return_value=self._fake_jar(session_value=self.SECRET),
+                ):
+                    try:
+                        extract_with_instagrapi()
+                        self.fail("expected RuntimeError")
+                    except RuntimeError as error:
+                        self.assertNotIn(self.SECRET, str(error))
+
+        self._run_with_fake_module(fake_module, body)
 
 
 class ApiTests(unittest.TestCase):

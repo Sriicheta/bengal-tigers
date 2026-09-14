@@ -450,17 +450,9 @@ def parse_rest_item(item: dict[str, Any]) -> dict[str, Any] | None:
     else:
         caption = ""
 
-    product_type = str(item.get("product_type") or "")
-    media_type = item.get("media_type")
     # media_type: 1 = photo, 2 = video/reel, 8 = carousel. Mirrors the
     # previous gallery-dl mapping where video counts as reel.
-    is_reel = product_type == "clips" or media_type == 2
-    post_type = "reel" if is_reel else "post"
-    post_url = (
-        f"https://www.instagram.com/reel/{code}/"
-        if is_reel
-        else f"https://www.instagram.com/p/{code}/"
-    )
+    post_type, post_url = _post_type_and_url(code, item.get("media_type"), item.get("product_type"))
 
     return {
         "id": code,
@@ -558,6 +550,215 @@ def parse_rest_feed(data: Any) -> list[dict[str, Any]]:
         raise RuntimeError("Instagram returned no usable posts")
     ordered = sorted(posts, key=lambda post: post["publishedAt"], reverse=True)
     return ordered[:POST_LIMIT]
+
+
+def _post_type_and_url(code: str, media_type: Any, product_type: Any) -> tuple[str, str]:
+    """Shared reel/post mapping: clips or video media counts as reel."""
+    product = str(product_type or "")
+    is_reel = product == "clips" or media_type == 2
+    post_type = "reel" if is_reel else "post"
+    post_url = (
+        f"https://www.instagram.com/reel/{code}/"
+        if is_reel
+        else f"https://www.instagram.com/p/{code}/"
+    )
+    return post_type, post_url
+
+
+def parse_instagrapi_media(media: Any) -> dict[str, Any] | None:
+    """Map one instagrapi Media object to the internal post shape.
+
+    Duck-typed so tests can pass simple stand-ins. Returns None for media
+    without usable content so callers can skip it.
+    """
+    get = (lambda name, default=None: media.get(name, default)) if isinstance(media, dict) else (
+        lambda name, default=None: getattr(media, name, default)
+    )
+    code = str(get("code") or "")
+    if not code:
+        return None
+    image_url = str(get("thumbnail_url") or "")
+    if not image_url.startswith("http"):
+        return None
+
+    caption = get("caption_text")
+    caption = str(caption).strip() if caption is not None else ""
+
+    taken_at = get("taken_at")
+    try:
+        if isinstance(taken_at, datetime):
+            taken_at = taken_at.timestamp()
+    except Exception:
+        taken_at = None
+
+    post_type, post_url = _post_type_and_url(code, get("media_type"), get("product_type"))
+    return {
+        "id": code,
+        "shortcode": code,
+        "url": post_url,
+        "caption": caption,
+        "publishedAt": _iso_datetime(taken_at),
+        "likes": _integer(get("like_count")),
+        "comments": _integer(get("comment_count")),
+        "type": post_type,
+        "sourceImage": image_url,
+        "headers": {},
+    }
+
+
+def _instagrapi_device_seed(user_id: str):
+    """Deterministic device identifiers so every cold start looks like one device.
+
+    A fresh random device on each serverless run looks like a new phone every
+    day, which invites verification challenges. Hardware-style IDs are derived
+    (uuid5) from the pinned user ID; per-launch IDs stay random.
+    """
+    import uuid as uuid_lib
+
+    seed = f"bengal-tigers:{user_id}"
+    stable = lambda name: str(uuid_lib.uuid5(uuid_lib.NAMESPACE_URL, f"{seed}:{name}"))
+    return {
+        "phone_id": stable("phone_id"),
+        "uuid": stable("uuid"),
+        "advertising_id": stable("advertising_id"),
+        "android_device_id": f"android-{stable('android_device_id').replace('-', '')[:16]}",
+    }
+
+
+def _sessionid_from_jar(jar) -> str | None:
+    """Pick the Instagram sessionid, preferring instagram-domain cookies.
+
+    A full-browser export can contain other sites' ``sessionid`` cookies, so a
+    bare name match may select the wrong session. Never logs values.
+    """
+    fallback = None
+    for cookie in jar or []:
+        name = getattr(cookie, "name", "")
+        value = getattr(cookie, "value", "")
+        if name != "sessionid" or not value:
+            continue
+        domain = str(getattr(cookie, "domain", "") or "")
+        if "instagram" in domain:
+            return str(value)
+        if fallback is None:
+            fallback = str(value)
+    return fallback
+
+
+def extract_with_instagrapi() -> list[dict[str, Any]]:
+    """Fetch the latest posts via the instagrapi private-API client.
+
+    In-process (no subprocess), authenticated with the browser ``sessionid``
+    from the existing cookie env vars. Presents stable device identifiers so
+    serverless cold starts do not look like a new phone each day.
+    """
+    try:
+        from instagrapi import Client as IgaClient
+        from instagrapi import exceptions as iga_errors
+    except ImportError as error:
+        raise RuntimeError(
+            "instagrapi is not installed; "
+            "check requirements.txt is installed for the function runtime"
+        ) from error
+
+    user_id = instagram_user_id()
+    if not user_id:
+        raise RuntimeError("INSTAGRAM_USER_ID is not configured")
+
+    with contextlib.ExitStack() as stack:
+        jar = _cookie_jar_from_environment(stack)
+        if jar is None:
+            raise RuntimeError(
+                "INSTAGRAM_COOKIES_B64/INSTAGRAM_COOKIES_FILE is not set;"
+                " Instagram usually blocks anonymous automated fetches."
+            )
+        sessionid = _sessionid_from_jar(jar)
+        if not sessionid:
+            raise RuntimeError(
+                "Instagram session cookie is missing;"
+                " export fresh cookies and update INSTAGRAM_COOKIES_B64."
+            )
+
+        client = IgaClient()
+        try:
+            for attribute, value in _instagrapi_device_seed(user_id).items():
+                setattr(client, attribute, value)
+            client.request_timeout = INSTAGRAM_API_TIMEOUT
+        except Exception:
+            pass
+
+        try:
+            logged_in = client.login_by_sessionid(sessionid)
+        except Exception as error:
+            raise _instagrapi_error(error, iga_errors) from error
+        if not logged_in:
+            raise RuntimeError(
+                "Instagram rejected the session;"
+                " export fresh cookies and update INSTAGRAM_COOKIES_B64."
+            )
+
+        try:
+            medias = client.user_medias(str(user_id), 20)
+        except Exception as error:
+            raise _instagrapi_error(error, iga_errors) from error
+
+    posts: list[dict[str, Any]] = []
+    for media in medias or []:
+        parsed = parse_instagrapi_media(media)
+        if parsed is not None:
+            posts.append(parsed)
+    if not posts:
+        raise RuntimeError("Instagram returned no usable posts")
+    ordered = sorted(posts, key=lambda post: post["publishedAt"], reverse=True)
+    return ordered[:POST_LIMIT]
+
+
+def _instagrapi_error(error: Exception, iga_errors: Any) -> RuntimeError:
+    """Map instagrapi exceptions to safe actionable errors (no secrets)."""
+    challenge = (
+        "ChallengeRequired", "ChallengeError", "ChallengeRedirection",
+        "ChallengeSelfieCaptcha", "ChallengeUnknownStep", "RecaptchaChallengeForm",
+        "CaptchaChallengeRequired", "SubmitPhoneNumberForm",
+        "SelectContactPointRecoveryForm", "LegacyForceSetNewPasswordForm",
+        "TwoFactorRequired", "AccountContactPointRequired",
+    )
+    login = ("LoginRequired", "ClientLoginRequired", "BadCredentials", "BadPassword")
+    throttled = (
+        "ClientThrottledError", "PleaseWaitFewMinutes", "RateLimitError",
+        "FeedbackRequired", "SignupSpamError", "SentryBlock",
+    )
+    missing = ("ClientNotFoundError", "UserNotFound", "MediaNotFound", "NotFoundError")
+    private = ("PrivateError", "PrivateAccount")
+    name = type(error).__name__
+    challenge_types = tuple(getattr(iga_errors, item, ()) for item in challenge if isinstance(getattr(iga_errors, item, ()), type))
+    login_types = tuple(getattr(iga_errors, item, ()) for item in login if isinstance(getattr(iga_errors, item, ()), type))
+    throttled_types = tuple(getattr(iga_errors, item, ()) for item in throttled if isinstance(getattr(iga_errors, item, ()), type))
+    missing_types = tuple(getattr(iga_errors, item, ()) for item in missing if isinstance(getattr(iga_errors, item, ()), type))
+    private_types = tuple(getattr(iga_errors, item, ()) for item in private if isinstance(getattr(iga_errors, item, ()), type))
+    timeout_types = tuple(
+        item for item in (getattr(iga_errors, "ClientRequestTimeout", ()),) if isinstance(item, type)
+    )
+
+    if challenge_types and isinstance(error, challenge_types):
+        return RuntimeError(
+            "Instagram asked for verification (challenge);"
+            " log in as the alt account, clear the challenge,"
+            " then export fresh cookies and update INSTAGRAM_COOKIES_B64."
+        )
+    if login_types and isinstance(error, login_types):
+        return RuntimeError(
+            "Instagram rejected the session;"
+            " export fresh cookies and update INSTAGRAM_COOKIES_B64."
+        )
+    if throttled_types and isinstance(error, throttled_types):
+        return RuntimeError("Instagram is rate limiting; try again later")
+    if missing_types and isinstance(error, missing_types):
+        return RuntimeError("Instagram user could not be found")
+    if private_types and isinstance(error, private_types):
+        return RuntimeError("Instagram profile is private and not accessible")
+    if timeout_types and isinstance(error, timeout_types):
+        return RuntimeError("Instagram request timed out; Instagram may be throttling")
+    return RuntimeError(f"Instagram request failed ({name})")
 
 
 def extract_with_instagram_api() -> list[dict[str, Any]]:
@@ -680,13 +881,23 @@ def extract_with_instagram_api() -> list[dict[str, Any]]:
 
 
 def extract_posts() -> list[dict[str, Any]]:
-    """Serverless-safe entry point: direct API when ID is set, gallery-dl otherwise.
+    """Serverless-safe entry point: instagrapi first, direct REST fallback.
 
-    Keeps local gallery-dl behavior intact while letting Vercel avoid the
-    subprocess path that exceeds serverless timeouts.
+    When INSTAGRAM_USER_ID is set, the instagrapi client is primary and the
+    single-request REST path is the fallback (never the gallery-dl
+    subprocess, which exceeds serverless timeouts). Without an ID, the local
+    gallery-dl behavior is kept intact.
     """
     if instagram_user_id():
-        return extract_with_instagram_api()
+        try:
+            return extract_with_instagrapi()
+        except Exception as error:
+            print(
+                f"instagrapi path failed ({type(error).__name__}: {error});"
+                " falling back to direct REST",
+                file=sys.stderr,
+            )
+            return extract_with_instagram_api()
     return extract_with_gallery_dl()
 
 
