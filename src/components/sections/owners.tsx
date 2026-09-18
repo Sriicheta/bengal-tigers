@@ -16,7 +16,7 @@ export function Owners() {
         <div className="mt-14 grid items-stretch gap-6 md:grid-cols-3">
           {OWNERS.map((owner) => (
             <GlowCard key={owner.name} glowColor="red" tabIndex={0}>
-              <div className="aspect-[4/5] w-full overflow-hidden bg-[#e9ebef]">
+              <div className="aspect-[4/5] w-full overflow-hidden bg-navy">
                 <img
                   src={owner.image}
                   alt={owner.name}
