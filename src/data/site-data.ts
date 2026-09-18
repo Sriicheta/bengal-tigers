@@ -13,7 +13,7 @@ import type { Player } from "@/components/ui/player-carousel";
 import heroBatsman from "@/assets/hero-batsman.png";
 import bengalTigersLogo from "@/assets/bengal-tigers-logo.svg";
 import ownerBoneyKapoor from "@/assets/owner-boney-kapoor.png";
-import ownerArjunKapoor from "@/assets/owner-arjun-kapoor-crop.jpg";
+import ownerArjunKapoor from "@/assets/owner-arjun-kapoor.png";
 import ownerBinaShah from "@/assets/owner-bina-shah-crop.jpg";
 
 import playerUdayPratapSingh from "@/assets/player-01-uday-pratap-singh.png";
@@ -51,19 +51,22 @@ export const OWNERS = [
   {
     name: "Boney Kapoor",
     image: ownerBoneyKapoor,
-    imagePosition: "50% 18%",
+    imagePosition: "50% 20%",
+    imageScale: 1.12,
     note: "Chairman · Sets the ambition for the franchise.",
   },
   {
     name: "Arjun Kapoor",
     image: ownerArjunKapoor,
-    imagePosition: "50% 12%",
+    imagePosition: "50% 14%",
+    imageScale: 1.06,
     note: "Ambassador · The energy behind every boundary rope.",
   },
   {
     name: "Bina Shah",
     image: ownerBinaShah,
     imagePosition: "50% 0%",
+    imageScale: 0.92,
     note: "Operations · Squad logistics and matchday command.",
   },
 ];
