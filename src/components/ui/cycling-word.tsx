@@ -18,7 +18,7 @@ export function CyclingWord({ words }: { words: string[] }) {
   }, [words.length]);
 
   return (
-    <span className="relative inline-block h-[1.15em] overflow-hidden align-bottom">
+    <span className="relative inline-block h-[1.3em] overflow-hidden align-bottom">
       <AnimatePresence mode="wait">
         <motion.span
           key={words[index]}
@@ -26,7 +26,7 @@ export function CyclingWord({ words }: { words: string[] }) {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -26, opacity: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="inline-block text-crimson-bright"
+          className="inline-block leading-[1.3] text-crimson-bright"
         >
           {words[index]}
         </motion.span>

@@ -28,7 +28,7 @@ export function HeadCoach() {
             <h3 className="mt-4 font-serif text-3xl font-semibold text-white sm:text-4xl">
               {HEAD_COACH.name}
             </h3>
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-mist">
+            <p className="mt-4 max-w-md text-justify text-sm leading-relaxed text-mist">
               Leads the Bengal Tigers dugout — setting matchday strategy,
               shaping the squad's preparation, and calling the final XI
               alongside team management.

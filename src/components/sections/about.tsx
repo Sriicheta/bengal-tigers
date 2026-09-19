@@ -17,7 +17,7 @@ export function About() {
             <h2 className="mt-4 font-serif text-3xl font-semibold text-white sm:text-4xl">
               Pride of Bengal. Passion for Cricket.
             </h2>
-            <p className="mt-6 text-base leading-relaxed text-mist sm:text-lg">
+            <p className="mt-6 text-justify text-base leading-relaxed text-mist sm:text-lg">
               Bengal Tigers represent the spirit, culture and cinematic
               identity of Bengal on the Celebrity Cricket League stage.
               Since joining the CCL in 2012, the franchise has brought

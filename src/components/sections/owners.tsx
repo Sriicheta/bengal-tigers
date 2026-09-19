@@ -32,7 +32,7 @@ export function Owners() {
                 />
               </div>
               <div className="border-t border-line bg-navy-panel p-6">
-                <h3 className="font-serif text-xl font-semibold text-white">
+                <h3 className="text-center font-serif text-xl font-semibold text-white">
                   {owner.name}
                 </h3>
               </div>
