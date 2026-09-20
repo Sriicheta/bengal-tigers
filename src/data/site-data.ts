@@ -27,6 +27,7 @@ import playerJoeyDebRoy from "@/assets/player-08-joey-deb-roy.png";
 import playerRahulMazumdar from "@/assets/player-09-rahul-mazumdar.png";
 import playerJoyMukherjee from "@/assets/player-10-joy-mukherjee.png";
 import playerJammyBanerjee from "@/assets/player-11-jammy-banerjee.png";
+import playerIndrasishRoy from "@/assets/player-12-indrasish-roy.jpeg";
 import headCoachSaradinduMukherjee from "@/assets/headcoach-saradindu-mukherjee.jpeg";
 
 import backboneSaradinduMukherjee from "@/assets/backbone-saradindu-mukherjee.jpeg";
@@ -34,6 +35,7 @@ import backboneAngshumanGhosh from "@/assets/backbone-angshuman-ghosh.jpeg";
 import backboneChinmoyRoy from "@/assets/backbone-chinmoy-roy.png";
 import backboneSuhadityaBiswas from "@/assets/backbone-suhaditya-biswas.jpeg";
 import backboneAdityaSeal from "@/assets/backbone-aditya-seal.jpeg";
+import backboneAnilavaChatterjee from "@/assets/backbone-anilava-chatterjee.jpeg";
 
 export { bengalTigersLogo, heroBatsman };
 
@@ -167,19 +169,25 @@ export const BACKBONE_MEMBERS: BackboneMember[] = [
   },
   {
     id: "backbone-07",
+    name: "Anilava Chatterjee",
+    designation: "Director Operation",
+    image: backboneAnilavaChatterjee,
+  },
+  {
+    id: "backbone-08",
     name: "Promise Baidya",
     designation: "Team Manager",
     // TODO: add photo — e.g. import backbonePromiseBaidya from "@/assets/backbone-promise-baidya.jpeg" and set image: backbonePromiseBaidya
     image: undefined,
   },
   {
-    id: "backbone-08",
+    id: "backbone-09",
     name: "Suhaditya Biswas",
     designation: "Head Of Marketing",
     image: backboneSuhadityaBiswas,
   },
   {
-    id: "backbone-09",
+    id: "backbone-10",
     name: "Aditya Seal",
     designation: "Media Manager",
     image: backboneAdityaSeal,
@@ -188,16 +196,17 @@ export const BACKBONE_MEMBERS: BackboneMember[] = [
 
 export const PLAYERS: Player[] = [
   { id: "player-5", name: "Jishu Sengupta", jerseyNumber: 1, image: playerJishuSengupta, role: "Captain" },
-  { id: "player-3", name: "Bonny Sengupta", jerseyNumber: 3, image: playerBonnySengupta, role: "Batter", battingStyle: "RHB" },
-  { id: "player-4", name: "Saurav Das", jerseyNumber: 2, image: playerSauravDas, role: "Wicket-Keeper" },
-  { id: "player-10", name: "Joy Mukherjee", jerseyNumber: 10, image: playerJoyMukherjee, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAO" },
-  { id: "player-1", name: "Uday Pratap Singh", jerseyNumber: 4, image: playerUdayPratapSingh, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAM" },
-  { id: "player-9", name: "Rahul Mazumdar", jerseyNumber: 9, image: playerRahulMazumdar, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAM" },
-  { id: "player-11", name: "Jammy Banerjee", jerseyNumber: 11, image: playerJammyBanerjee, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAM" },
-  { id: "player-8", name: "Joey Deb Roy", jerseyNumber: 8, image: playerJoeyDebRoy, role: "Batter", battingStyle: "RHB" },
-  { id: "player-6", name: "Ananda Choudhuri", jerseyNumber: 6, image: playerAnandaChoudhuri, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAO" },
-  { id: "player-7", name: "Ratnadeep Ghosh", jerseyNumber: 7, image: playerRatnadeepGhosh, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAL" },
-  { id: "player-2", name: "Anirban Chakraborty", jerseyNumber: 5, image: playerAnirbanChakraborty, role: "All-Rounder", battingStyle: "LHB", bowlingStyle: "RAM" },
+  { id: "player-3", name: "Bonny Sengupta", jerseyNumber: 2, image: playerBonnySengupta, role: "Batter", battingStyle: "RHB" },
+  { id: "player-4", name: "Saurav Das", jerseyNumber: 3, image: playerSauravDas, role: "Wicket-Keeper" },
+  { id: "player-10", name: "Joy Mukherjee", jerseyNumber: 4, image: playerJoyMukherjee, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAO" },
+  { id: "player-1", name: "Uday Pratap Singh", jerseyNumber: 5, image: playerUdayPratapSingh, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAM" },
+  { id: "player-9", name: "Rahul Mazumdar", jerseyNumber: 6, image: playerRahulMazumdar, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAM" },
+  { id: "player-11", name: "Jammy Banerjee", jerseyNumber: 7, image: playerJammyBanerjee, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAM" },
+  { id: "player-12", name: "Indrasish Roy", jerseyNumber: 8, image: playerIndrasishRoy, role: "All-Rounder", imagePosition: "50% 21%", imageScale: 1.2, imageOrigin: "0% 30%" },
+  { id: "player-8", name: "Joey Deb Roy", jerseyNumber: 9, image: playerJoeyDebRoy, role: "Batter", battingStyle: "RHB" },
+  { id: "player-6", name: "Ananda Choudhuri", jerseyNumber: 10, image: playerAnandaChoudhuri, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAO" },
+  { id: "player-7", name: "Ratnadeep Ghosh", jerseyNumber: 11, image: playerRatnadeepGhosh, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAL" },
+  { id: "player-2", name: "Anirban Chakraborty", jerseyNumber: 12, image: playerAnirbanChakraborty, role: "All-Rounder", battingStyle: "LHB", bowlingStyle: "RAM" },
 ];
 
 export const ROSTER: Player[] = PLAYERS;

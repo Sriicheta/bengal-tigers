@@ -46,6 +46,16 @@ export interface Player {
   primaryStat?: string;
   secondaryStat?: string;
   isCoach?: boolean;
+  /**
+   * Optional per-photo framing inside the fixed card image frame
+   * (CSS only — the source file is never altered). `imagePosition`
+   * aligns the cover-fit crop, `imageScale` applies a uniform
+   * (non-distorting) zoom, `imageOrigin` anchors that zoom on the
+   * subject so the head stays centered. Unset = default framing.
+   */
+  imagePosition?: string;
+  imageScale?: number;
+  imageOrigin?: string;
 }
 
 export interface PlayerCarouselProps {
@@ -179,6 +189,14 @@ const PlayerCard: React.FC<{ player: Player; index: number }> = ({
           alt={player.name}
           draggable={false}
           className="h-full w-full object-cover object-top"
+          style={{
+            objectPosition: player.imagePosition,
+            transform:
+              player.imageScale && player.imageScale !== 1
+                ? `scale(${player.imageScale})`
+                : undefined,
+            transformOrigin: player.imageOrigin ?? player.imagePosition,
+          }}
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy-panel via-navy-panel/10 to-transparent" />
       </div>
