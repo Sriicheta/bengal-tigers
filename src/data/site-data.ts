@@ -40,7 +40,7 @@ export const SEASON_RECORD = [
 ];
 
 export const CONTACT = {
-  location: "Kolkata, West Bengal",
+  location: "422 Lake Gardens, Kolkata, West Bengal",
   phone: "+91 91477 26162",
   instagramUrl: "https://www.instagram.com/bengaltigers.ccl",
   instagramHandle: "@bengaltigers.ccl",
@@ -141,6 +141,5 @@ export const NAV_FOOTER_LINKS = [
   { label: "Home", href: "#top" },
   { label: "Team", href: "#roster" },
   { label: "Owners", href: "#owners" },
-  { label: "Matches", href: "#stats" },
   { label: "News", href: "#ccl" },
 ];

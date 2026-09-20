@@ -4,7 +4,6 @@ import { Navbar } from "@/components/navbar";
 import { Hero } from "@/components/sections/hero";
 import { Owners } from "@/components/sections/owners";
 import { About } from "@/components/sections/about";
-import { Stats } from "@/components/sections/stats";
 import { Roster } from "@/components/sections/roster";
 import { HeadCoach } from "@/components/sections/head-coach";
 import { Faq } from "@/components/sections/faq";
@@ -25,7 +24,6 @@ export default function Page() {
       <Hero />
       <Owners />
       <About />
-      <Stats />
       <Roster />
       <HeadCoach />
       <Faq />

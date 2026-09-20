@@ -42,12 +42,6 @@ export function Hero() {
             Explore Team
             <ArrowRight className="h-4 w-4" />
           </a>
-          <a
-            href="#stats"
-            className="rounded-full border border-white/20 bg-white/5 px-7 py-3.5 text-sm font-semibold uppercase tracking-wide text-white backdrop-blur-sm transition-colors hover:border-gold/50 hover:text-gold-bright"
-          >
-            Latest Matches
-          </a>
         </div>
 
         <div className="mt-14 flex flex-wrap items-center gap-x-4 gap-y-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-white/50">

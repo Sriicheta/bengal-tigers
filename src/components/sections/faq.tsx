@@ -29,12 +29,12 @@ export function Faq() {
         </div>
 
         <a
-          href="https://www.cclcricket.com"
+          href="https://ccl.in"
           target="_blank"
           rel="noreferrer"
           className="mt-10 inline-flex items-center gap-2 rounded-full bg-crimson px-7 py-3 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-crimson-bright"
         >
-          Register on CCLCricket.com
+          Register on ccl.in
           <ExternalLink className="h-4 w-4" />
         </a>
       </div>

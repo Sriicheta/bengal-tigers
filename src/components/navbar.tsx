@@ -13,7 +13,6 @@ const LINKEDIN_URL = "https://www.linkedin.com/company/bengal-tigers-ccl/";
 const NAV_LINKS = [
   { label: "Home", href: "#top" },
   { label: "Team", href: "#roster" },
-  { label: "Matches", href: "#stats" },
   { label: "Gallery", href: "#instagram" },
   { label: "News", href: "#ccl" },
   { label: "Contact", href: "#footer" },
