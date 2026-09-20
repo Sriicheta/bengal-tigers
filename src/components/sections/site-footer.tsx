@@ -1,5 +1,5 @@
 import * as React from "react";
-import { MapPin, Phone, Facebook, Instagram } from "lucide-react";
+import { MapPin, Phone, Facebook, Instagram, Linkedin } from "lucide-react";
 
 import { CONTACT, NAV_FOOTER_LINKS, bengalTigersLogo } from "@/data/site-data";
 
@@ -74,6 +74,15 @@ export function SiteFooter() {
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-navy-panel text-mist hover:border-crimson/50 hover:text-white"
               >
                 <Instagram className="h-4 w-4" />
+              </a>
+              <a
+                href={CONTACT.linkedinUrl}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="LinkedIn"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-navy-panel text-mist hover:border-crimson/50 hover:text-white"
+              >
+                <Linkedin className="h-4 w-4" />
               </a>
             </div>
           </div>

@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Menu, X, Facebook, Instagram } from "lucide-react";
+import { Menu, X, Facebook, Instagram, Linkedin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/bengal-tigers-logo.svg";
 
 const INSTAGRAM_URL = "https://www.instagram.com/bengaltigers.ccl";
 const FACEBOOK_URL =
   "https://www.facebook.com/share/1HRtoBdhDM/?mibextid=wwXIfr";
+const LINKEDIN_URL = "https://www.linkedin.com/company/bengal-tigers-ccl/";
 
 const NAV_LINKS = [
   { label: "Home", href: "#top" },
@@ -87,6 +88,15 @@ export const Navbar: React.FC = () => {
           >
             <Instagram className="h-[18px] w-[18px]" />
           </a>
+          <a
+            href={LINKEDIN_URL}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Bengal Tigers on LinkedIn"
+            className="hidden text-mist transition-colors hover:text-white sm:inline-flex"
+          >
+            <Linkedin className="h-[18px] w-[18px]" />
+          </a>
 
           <button
             className="text-white lg:hidden"
@@ -130,6 +140,15 @@ export const Navbar: React.FC = () => {
                 className="text-mist transition-colors hover:text-white"
               >
                 <Instagram className="h-5 w-5" />
+              </a>
+              <a
+                href={LINKEDIN_URL}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Bengal Tigers on LinkedIn"
+                className="text-mist transition-colors hover:text-white"
+              >
+                <Linkedin className="h-5 w-5" />
               </a>
             </li>
           </ul>
