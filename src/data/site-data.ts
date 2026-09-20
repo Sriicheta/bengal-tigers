@@ -29,6 +29,12 @@ import playerJoyMukherjee from "@/assets/player-10-joy-mukherjee.png";
 import playerJammyBanerjee from "@/assets/player-11-jammy-banerjee.png";
 import headCoachSaradinduMukherjee from "@/assets/headcoach-saradindu-mukherjee.jpeg";
 
+import backboneSaradinduMukherjee from "@/assets/backbone-saradindu-mukherjee.jpeg";
+import backboneAngshumanGhosh from "@/assets/backbone-angshuman-ghosh.jpeg";
+import backboneChinmoyRoy from "@/assets/backbone-chinmoy-roy.png";
+import backboneSuhadityaBiswas from "@/assets/backbone-suhaditya-biswas.jpeg";
+import backboneAdityaSeal from "@/assets/backbone-aditya-seal.jpeg";
+
 export { bengalTigersLogo, heroBatsman };
 
 export const HEADLINE_WORDS = ["Strength", "Passion", "Glory", "Heritage"];
@@ -106,6 +112,80 @@ export const HEAD_COACH: Player = {
   isCoach: true,
 };
 
+export interface BackboneMember {
+  id: string;
+  name: string;
+  designation: string;
+  /**
+   * Profile photo. `undefined` renders an intentional styled placeholder
+   * with identical dimensions/borders so the layout never shifts.
+   * To add a photo later: import it above and set `image:` here —
+   * no component changes needed.
+   */
+  image?: string;
+}
+
+export const BACKBONE_MEMBERS: BackboneMember[] = [
+  {
+    id: "backbone-01",
+    name: "Rajesh Shah",
+    designation: "Chief Executive Officer",
+    // TODO: add photo — e.g. import backboneRajeshShah from "@/assets/backbone-rajesh-shah.jpeg" and set image: backboneRajeshShah
+    image: undefined,
+  },
+  {
+    id: "backbone-02",
+    name: "Saradindu Mukherjee (Bappa)",
+    designation: "Head Coach",
+    image: backboneSaradinduMukherjee,
+  },
+  {
+    id: "backbone-03",
+    name: "Angshuman Ghosh",
+    designation: "Assistant Coach",
+    image: backboneAngshumanGhosh,
+  },
+  {
+    id: "backbone-04",
+    name: "Chinmoy Roy",
+    designation: "Strength & Conditioning Coach",
+    image: backboneChinmoyRoy,
+  },
+  {
+    id: "backbone-05",
+    name: "Kazi Junaid Islam",
+    designation: "Physiotherapist",
+    // TODO: add photo — e.g. import backboneKaziJunaidIslam from "@/assets/backbone-kazi-junaid-islam.jpeg" and set image: backboneKaziJunaidIslam
+    image: undefined,
+  },
+  {
+    id: "backbone-06",
+    name: "Raghunath Basak",
+    designation: "Masseur",
+    // TODO: add photo — e.g. import backboneRaghunathBasak from "@/assets/backbone-raghunath-basak.jpeg" and set image: backboneRaghunathBasak
+    image: undefined,
+  },
+  {
+    id: "backbone-07",
+    name: "Promise Baidya",
+    designation: "Team Manager",
+    // TODO: add photo — e.g. import backbonePromiseBaidya from "@/assets/backbone-promise-baidya.jpeg" and set image: backbonePromiseBaidya
+    image: undefined,
+  },
+  {
+    id: "backbone-08",
+    name: "Suhaditya Biswas",
+    designation: "Head Of Marketing",
+    image: backboneSuhadityaBiswas,
+  },
+  {
+    id: "backbone-09",
+    name: "Aditya Seal",
+    designation: "Media Manager",
+    image: backboneAdityaSeal,
+  },
+];
+
 export const PLAYERS: Player[] = [
   { id: "player-5", name: "Jishu Sengupta", jerseyNumber: 1, image: playerJishuSengupta, role: "Captain" },
   { id: "player-3", name: "Bonny Sengupta", jerseyNumber: 3, image: playerBonnySengupta, role: "Batter", battingStyle: "RHB" },
@@ -139,7 +219,8 @@ export const FAQ_ITEMS = [
 
 export const NAV_FOOTER_LINKS = [
   { label: "Home", href: "#top" },
-  { label: "Team", href: "#roster" },
   { label: "Owners", href: "#owners" },
-  { label: "News", href: "#ccl" },
+  { label: "Team", href: "#roster" },
+  { label: "Visionaries", href: "#backbone" },
+  { label: "Latest On Media", href: "#instagram" },
 ];

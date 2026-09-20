@@ -12,10 +12,10 @@ const LINKEDIN_URL = "https://www.linkedin.com/company/bengal-tigers-ccl/";
 
 const NAV_LINKS = [
   { label: "Home", href: "#top" },
+  { label: "Owners", href: "#owners" },
   { label: "Team", href: "#roster" },
-  { label: "Gallery", href: "#instagram" },
-  { label: "News", href: "#ccl" },
-  { label: "Contact", href: "#footer" },
+  { label: "Visionaries", href: "#backbone" },
+  { label: "Latest On Media", href: "#instagram" },
 ];
 
 const TigerMark: React.FC<{ className?: string }> = ({ className }) => (

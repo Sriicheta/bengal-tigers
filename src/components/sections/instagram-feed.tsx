@@ -107,7 +107,7 @@ export function InstagramFeed() {
           <div>
             <SectionTag>{feed?.account.handle ?? CONTACT.instagramHandle}</SectionTag>
             <h2 className="mt-4 font-serif text-3xl font-semibold text-white sm:text-4xl">
-              Latest from Instagram
+              Latest on Media
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-6 text-white/55">
               Matchday energy, squad news and the newest Bengal Tigers moments.

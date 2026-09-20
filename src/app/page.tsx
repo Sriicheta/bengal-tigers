@@ -5,7 +5,7 @@ import { Hero } from "@/components/sections/hero";
 import { Owners } from "@/components/sections/owners";
 import { About } from "@/components/sections/about";
 import { Roster } from "@/components/sections/roster";
-import { HeadCoach } from "@/components/sections/head-coach";
+import { Backbone } from "@/components/sections/backbone";
 import { Faq } from "@/components/sections/faq";
 import { InstagramFeed } from "@/components/sections/instagram-feed";
 import { SiteFooter } from "@/components/sections/site-footer";
@@ -25,7 +25,7 @@ export default function Page() {
       <Owners />
       <About />
       <Roster />
-      <HeadCoach />
+      <Backbone />
       <Faq />
       <InstagramFeed />
       <SiteFooter />
