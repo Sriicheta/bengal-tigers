@@ -36,6 +36,7 @@ import backboneChinmoyRoy from "@/assets/backbone-chinmoy-roy.png";
 import backboneSuhadityaBiswas from "@/assets/backbone-suhaditya-biswas.jpeg";
 import backboneAdityaSeal from "@/assets/backbone-aditya-seal.jpeg";
 import backboneAnilavaChatterjee from "@/assets/backbone-anilava-chatterjee.jpeg";
+import backboneRajShah from "@/assets/backbone-raj-shah.jpeg";
 
 export { bengalTigersLogo, heroBatsman };
 
@@ -125,15 +126,25 @@ export interface BackboneMember {
    * no component changes needed.
    */
   image?: string;
+  /**
+   * Optional per-photo framing inside the fixed 4:5 frame (CSS only —
+   * the source file is never altered). `imagePosition` aligns the
+   * cover-fit crop, `imageScale` applies a uniform (non-distorting)
+   * zoom, `imageOrigin` anchors that zoom on the subject so the head
+   * stays centered. Unset = default framing.
+   */
+  imagePosition?: string;
+  imageScale?: number;
+  imageOrigin?: string;
 }
 
 export const BACKBONE_MEMBERS: BackboneMember[] = [
   {
     id: "backbone-01",
-    name: "Rajesh Shah",
+    name: "Raj Shah",
     designation: "Chief Executive Officer",
-    // TODO: add photo — e.g. import backboneRajeshShah from "@/assets/backbone-rajesh-shah.jpeg" and set image: backboneRajeshShah
-    image: undefined,
+    image: backboneRajShah,
+    imagePosition: "50% 43%",
   },
   {
     id: "backbone-02",
@@ -202,7 +213,7 @@ export const PLAYERS: Player[] = [
   { id: "player-1", name: "Uday Pratap Singh", jerseyNumber: 5, image: playerUdayPratapSingh, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAM" },
   { id: "player-9", name: "Rahul Mazumdar", jerseyNumber: 6, image: playerRahulMazumdar, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAM" },
   { id: "player-11", name: "Jammy Banerjee", jerseyNumber: 7, image: playerJammyBanerjee, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAM" },
-  { id: "player-12", name: "Indrasish Roy", jerseyNumber: 8, image: playerIndrasishRoy, role: "All-Rounder", imagePosition: "50% 21%", imageScale: 1.2, imageOrigin: "0% 30%" },
+  { id: "player-12", name: "Indrasish Roy", jerseyNumber: 8, image: playerIndrasishRoy, role: "All-Rounder", imagePosition: "50% 37%", imageScale: 1.2, imageOrigin: "0% 30%" },
   { id: "player-8", name: "Joey Deb Roy", jerseyNumber: 9, image: playerJoeyDebRoy, role: "Batter", battingStyle: "RHB" },
   { id: "player-6", name: "Ananda Choudhuri", jerseyNumber: 10, image: playerAnandaChoudhuri, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAO" },
   { id: "player-7", name: "Ratnadeep Ghosh", jerseyNumber: 11, image: playerRatnadeepGhosh, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAL" },

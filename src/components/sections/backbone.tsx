@@ -20,6 +20,14 @@ function BackboneCard({ member }: { member: BackboneMember }) {
             src={member.image}
             alt={member.name}
             className="block h-full w-full object-cover object-top"
+            style={{
+              objectPosition: member.imagePosition,
+              transform:
+                member.imageScale && member.imageScale !== 1
+                  ? `scale(${member.imageScale})`
+                  : undefined,
+              transformOrigin: member.imageOrigin ?? member.imagePosition,
+            }}
             loading="lazy"
           />
         </div>
