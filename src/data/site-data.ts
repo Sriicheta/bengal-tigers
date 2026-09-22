@@ -39,6 +39,7 @@ import backboneAnilavaChatterjee from "@/assets/backbone-anilava-chatterjee.png"
 import backboneRajeshShah from "@/assets/backbone-rajesh-shah.png";
 import backboneKaziJunaidIslam from "@/assets/backbone-kazi-junaid-islam.png";
 import backboneRaghunathBasak from "@/assets/backbone-raghunath-basak.png";
+import backbonePromiseBaidya from "@/assets/backbone-promise-baidya.jpeg";
 
 export { bengalTigersLogo, heroBatsman };
 
@@ -188,8 +189,7 @@ export const BACKBONE_MEMBERS: BackboneMember[] = [
     id: "backbone-08",
     name: "Promise Baidya",
     designation: "Team Manager",
-    // TODO: add photo — e.g. import backbonePromiseBaidya from "@/assets/backbone-promise-baidya.jpeg" and set image: backbonePromiseBaidya
-    image: undefined,
+    image: backbonePromiseBaidya,
   },
   {
     id: "backbone-09",
