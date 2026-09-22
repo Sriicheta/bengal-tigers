@@ -181,7 +181,7 @@ export const BACKBONE_MEMBERS: BackboneMember[] = [
   {
     id: "backbone-07",
     name: "Anilava Chatterjee",
-    designation: "Director Operation",
+    designation: "Director, Operations",
     image: backboneAnilavaChatterjee,
   },
   {
@@ -194,13 +194,13 @@ export const BACKBONE_MEMBERS: BackboneMember[] = [
   {
     id: "backbone-09",
     name: "Suhaditya Biswas",
-    designation: "Head Of Marketing",
+    designation: "Business Development",
     image: backboneSuhadityaBiswas,
   },
   {
     id: "backbone-10",
     name: "Aditya Seal",
-    designation: "Media Manager",
+    designation: "Media & Production",
     image: backboneAdityaSeal,
   },
 ];
