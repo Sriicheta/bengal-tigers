@@ -17,16 +17,22 @@ export function CyclingWord({ words }: { words: string[] }) {
     return () => clearInterval(id);
   }, [words.length]);
 
+  // The mask has no fixed height: it shrink-wraps the word, which inherits
+  // the surrounding font-size/line-height. Since an overflow-hidden
+  // inline-block aligns by its bottom edge, `align-bottom` pins that edge to
+  // the line-box bottom — putting every word's baseline exactly on the
+  // surrounding text's baseline. Travel is 100% of the word's own height so
+  // it stays one full line at any text size.
   return (
-    <span className="relative inline-block h-[1.3em] overflow-hidden align-bottom">
+    <span className="relative inline-block overflow-hidden align-bottom">
       <AnimatePresence mode="wait">
         <motion.span
           key={words[index]}
-          initial={{ y: 26, opacity: 0 }}
+          initial={{ y: "100%", opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -26, opacity: 0 }}
+          exit={{ y: "-100%", opacity: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="inline-block leading-[1.3] text-crimson-bright"
+          className="inline-block text-crimson-bright"
         >
           {words[index]}
         </motion.span>
