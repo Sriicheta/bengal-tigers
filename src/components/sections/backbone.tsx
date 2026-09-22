@@ -46,12 +46,12 @@ function BackboneCard({ member }: { member: BackboneMember }) {
         </div>
       )}
       <div className="border-t border-line bg-navy-panel p-6 text-center">
-        <span className="inline-flex items-center rounded-full border border-gold/40 bg-black/60 px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-gold">
-          {member.designation}
-        </span>
-        <h3 className="mt-3 font-serif text-xl font-semibold text-white">
+        <h3 className="font-serif text-xl font-semibold text-white">
           {member.name}
         </h3>
+        <span className="mt-3 inline-flex items-center rounded-full border border-gold/40 bg-black/60 px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-gold">
+          {member.designation}
+        </span>
       </div>
     </GlowCard>
   );

@@ -35,8 +35,10 @@ import backboneAngshumanGhosh from "@/assets/backbone-angshuman-ghosh.jpeg";
 import backboneChinmoyRoy from "@/assets/backbone-chinmoy-roy.png";
 import backboneSuhadityaBiswas from "@/assets/backbone-suhaditya-biswas.jpeg";
 import backboneAdityaSeal from "@/assets/backbone-aditya-seal.jpeg";
-import backboneAnilavaChatterjee from "@/assets/backbone-anilava-chatterjee.jpeg";
-import backboneRajShah from "@/assets/backbone-raj-shah.jpeg";
+import backboneAnilavaChatterjee from "@/assets/backbone-anilava-chatterjee.png";
+import backboneRajeshShah from "@/assets/backbone-rajesh-shah.png";
+import backboneKaziJunaidIslam from "@/assets/backbone-kazi-junaid-islam.png";
+import backboneRaghunathBasak from "@/assets/backbone-raghunath-basak.png";
 
 export { bengalTigersLogo, heroBatsman };
 
@@ -141,9 +143,9 @@ export interface BackboneMember {
 export const BACKBONE_MEMBERS: BackboneMember[] = [
   {
     id: "backbone-01",
-    name: "Raj Shah",
+    name: "Rajesh Shah",
     designation: "Chief Executive Officer",
-    image: backboneRajShah,
+    image: backboneRajeshShah,
     imagePosition: "50% 43%",
   },
   {
@@ -168,15 +170,13 @@ export const BACKBONE_MEMBERS: BackboneMember[] = [
     id: "backbone-05",
     name: "Kazi Junaid Islam",
     designation: "Physiotherapist",
-    // TODO: add photo — e.g. import backboneKaziJunaidIslam from "@/assets/backbone-kazi-junaid-islam.jpeg" and set image: backboneKaziJunaidIslam
-    image: undefined,
+    image: backboneKaziJunaidIslam,
   },
   {
     id: "backbone-06",
     name: "Raghunath Basak",
     designation: "Masseur",
-    // TODO: add photo — e.g. import backboneRaghunathBasak from "@/assets/backbone-raghunath-basak.jpeg" and set image: backboneRaghunathBasak
-    image: undefined,
+    image: backboneRaghunathBasak,
   },
   {
     id: "backbone-07",
