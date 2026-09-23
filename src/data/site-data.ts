@@ -144,7 +144,7 @@ export interface BackboneMember {
 export const BACKBONE_MEMBERS: BackboneMember[] = [
   {
     id: "backbone-01",
-    name: "Rajesh Shah",
+    name: "Raj Shah",
     designation: "Chief Executive Officer",
     image: backboneRajeshShah,
     imagePosition: "50% 43%",
