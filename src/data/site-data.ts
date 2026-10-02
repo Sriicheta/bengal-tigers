@@ -17,7 +17,7 @@ import ownerArjunKapoor from "@/assets/owner-arjun-kapoor.png";
 import ownerBinaShah from "@/assets/owner-bina-shah-framed.png";
 
 import playerUdayPratapSingh from "@/assets/player-01-uday-pratap-singh.png";
-import playerAnirbanChakraborty from "@/assets/player-02-anirban-chakraborty.png";
+import playerAnirrbanChackrabarty from "@/assets/player-02-anirrban-chackrabarty.jpeg";
 import playerBonnySengupta from "@/assets/player-03-bonny-sengupta.png";
 import playerSauravDas from "@/assets/player-04-saurav-das.png";
 import playerJishuSengupta from "@/assets/player-05-jishu-sengupta.png";
@@ -217,7 +217,7 @@ export const PLAYERS: Player[] = [
   { id: "player-8", name: "Joey Deb Roy", jerseyNumber: 9, image: playerJoeyDebRoy, role: "Batter", battingStyle: "RHB" },
   { id: "player-6", name: "Ananda Choudhuri", jerseyNumber: 10, image: playerAnandaChoudhuri, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAO" },
   { id: "player-7", name: "Ratnadeep Ghosh", jerseyNumber: 11, image: playerRatnadeepGhosh, role: "All-Rounder", battingStyle: "RHB", bowlingStyle: "RAL" },
-  { id: "player-2", name: "Anirban Chakraborty", jerseyNumber: 12, image: playerAnirbanChakraborty, role: "All-Rounder", battingStyle: "LHB", bowlingStyle: "RAM" },
+  { id: "player-2", name: "Anirrban Chackrabarty", jerseyNumber: 12, image: playerAnirrbanChackrabarty, role: "All-Rounder", battingStyle: "LHB", bowlingStyle: "RAM" },
 ];
 
 export const ROSTER: Player[] = PLAYERS;
